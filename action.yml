@@ -1,12 +1,12 @@
 name: 'Azure Boards - Update Work Items State'
-description: 'This action will update a work item's state via Azure Boards plug-in'
+description: 'This action will update a work items state via Azure Boards plug-in'
 author: 'jlugaro'
 branding:
-  icon: "git-pull-request"
-  color: "black"
+  icon: 'git-pull-request'
+  color: 'black'
 outputs:
   id:
-    description: "Work item state updated"
+    description: 'Work item state updated'
 runs:
   using: 'node16'
   main: 'dist/index.js'
