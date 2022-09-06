@@ -356,12 +356,13 @@ function useGithub(env) {
                 console.log('Getting pull request');
                 const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${env.pullRequestNumber}`;
                 console.log(`Pull Request URL: ${requestUrl}`);
-                const response = yield (0, node_fetch_1.default)(requestUrl, {
+                yield (0, node_fetch_1.default)(requestUrl, {
                     method: 'GET',
                     headers: getRequestHeaders()
+                }).then(response => {
+                    pullRequest = response.json();
+                    console.log(console.log(`Pull Request object: ${pullRequest}`));
                 });
-                pullRequest = yield response.json();
-                console.log(console.log(`Pull Request object: ${pullRequest}`));
             }
             catch (err) {
                 core.setFailed(err.toString());

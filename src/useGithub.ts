@@ -20,13 +20,13 @@ export async function useGithub(env: actionEnvModel): Promise<any> {
 
       console.log(`Pull Request URL: ${requestUrl}`)
 
-      const response = await fetch(requestUrl, {
+      await fetch(requestUrl, {
         method: 'GET',
         headers: getRequestHeaders()
+      }).then(response => {
+        pullRequest = response.json()
+        console.log(console.log(`Pull Request object: ${pullRequest}`))
       })
-
-      pullRequest = await response.json()
-      console.log(console.log(`Pull Request object: ${pullRequest}`))
     } catch (err: any) {
       core.setFailed(err.toString())
     }
