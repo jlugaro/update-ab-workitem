@@ -1,11 +1,6 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
-inputs:
-  milliseconds: # change this
-    required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+name: 'Azure Boards - Update Work Items State'
+description: 'This action will update a work item's state via Azure Boards plug-in'
+author: 'jlugaro'
 runs:
   using: 'node16'
   main: 'dist/index.js'
