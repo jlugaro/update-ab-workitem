@@ -107,7 +107,7 @@ function run() {
     });
 }
 function getValuesFromPayload(payload) {
-    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, process.env.branch_name, process.env.closedstate, process.env.propenstate, process.env.inprogressstate);
+    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.ghrepo_owner, process.env.ghrepo, process.env.pull_number, process.env.branch_name, process.env.closedstate, process.env.propenstate, process.env.inprogressstate);
 }
 run();
 
