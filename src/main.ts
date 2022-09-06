@@ -1,12 +1,10 @@
 import * as core from '@actions/core'
-import * as fetch from 'node-fetch'
 import * as github from '@actions/github'
 import {useGithub} from './useGithub'
 import {useAzureBoards} from './useAzureBoards'
 import {actionEnvModel} from './models/actionEnvModel'
 
 const version = '1.0.0'
-global.Headers = fetch.Headers
 
 async function run(): Promise<void> {
   try {
