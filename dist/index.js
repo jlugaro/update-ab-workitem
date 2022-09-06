@@ -52,6 +52,7 @@ const fetch = __importStar(__nccwpck_require__(6882));
 const github = __importStar(__nccwpck_require__(5438));
 const useGithub_1 = __nccwpck_require__(6087);
 const useAzureBoards_1 = __nccwpck_require__(1375);
+const actionEnvModel_1 = __nccwpck_require__(1634);
 const version = '1.0.0';
 global.Headers = fetch.Headers;
 function run() {
@@ -106,9 +107,38 @@ function run() {
     });
 }
 function getValuesFromPayload(payload) {
-    return new actionEnvModel(payload.action, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, process.env.branch_name, process.env.closedstate, process.env.propenstate, process.env.inprogressstate);
+    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, process.env.branch_name, process.env.closedstate, process.env.propenstate, process.env.inprogressstate);
 }
 run();
+
+
+/***/ }),
+
+/***/ 1634:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.actionEnvModel = void 0;
+class actionEnvModel {
+    constructor(action, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, branchName, closedState, openState, inProgressState) {
+        this.action = action !== null && action !== void 0 ? action : '';
+        this.githubPAT = githubPAT !== null && githubPAT !== void 0 ? githubPAT : '';
+        this.adoPAT = adoPAT !== null && adoPAT !== void 0 ? adoPAT : '';
+        this.adoProject = adoProject !== null && adoProject !== void 0 ? adoProject : '';
+        this.adoOrganization = adoOrganization !== null && adoOrganization !== void 0 ? adoOrganization : '';
+        this.adoOrganizationUrl = adoOrganizationUrl !== null && adoOrganizationUrl !== void 0 ? adoOrganizationUrl : '';
+        this.repoOwner = repoOwner !== null && repoOwner !== void 0 ? repoOwner : '';
+        this.repoName = repoName !== null && repoName !== void 0 ? repoName : '';
+        this.pullRequestNumber = pullRequestNumber !== null && pullRequestNumber !== void 0 ? pullRequestNumber : '';
+        this.branchName = branchName !== null && branchName !== void 0 ? branchName : '';
+        this.closedState = closedState !== null && closedState !== void 0 ? closedState : '';
+        this.openState = openState !== null && openState !== void 0 ? openState : '';
+        this.inProgressState = inProgressState !== null && inProgressState !== void 0 ? inProgressState : '';
+    }
+}
+exports.actionEnvModel = actionEnvModel;
 
 
 /***/ }),
