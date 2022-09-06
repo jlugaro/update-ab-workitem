@@ -18,12 +18,15 @@ export async function useGithub(env: actionEnvModel): Promise<any> {
 
       const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${env.pullRequestNumber}`
 
+      console.log(`Pull Request URL: ${requestUrl}`)
+
       const response = await fetch(requestUrl, {
         method: 'GET',
         headers: getRequestHeaders()
       })
 
       pullRequest = await response.json()
+      console.log(console.log(`Pull Request object: ${pullRequest}`))
     } catch (err: any) {
       core.setFailed(err.toString())
     }
