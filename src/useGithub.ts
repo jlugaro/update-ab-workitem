@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import {actionEnvModel} from './models/actionEnvModel'
 
 export async function useGithub(env: actionEnvModel): Promise<any> {
   let pullRequest: any = null

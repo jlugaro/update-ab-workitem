@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as azureDevOpsHandler from 'azure-devops-node-api'
+import {actionEnvModel} from './models/actionEnvModel'
 
 export async function useAzureBoards(
   env: actionEnvModel,

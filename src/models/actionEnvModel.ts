@@ -1,4 +1,4 @@
-class actionEnvModel {
+export class actionEnvModel {
   action: string
   githubPAT: string
   adoPAT: string
