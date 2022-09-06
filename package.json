@@ -1,8 +1,8 @@
 {
-  "name": "typescript-action",
+  "name": "typescript-work-item-state-update",
   "version": "0.0.0",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "update workitem state on pull request change",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
