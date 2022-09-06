@@ -48,11 +48,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const fetch = __importStar(__nccwpck_require__(6882));
 const github = __importStar(__nccwpck_require__(5438));
 const useGithub_1 = __nccwpck_require__(6087);
 const useAzureBoards_1 = __nccwpck_require__(1375);
 const actionEnvModel_1 = __nccwpck_require__(1634);
 const version = '1.0.0';
+global.Headers = fetch.Headers;
 function run() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
