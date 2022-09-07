@@ -325,12 +325,12 @@ const version = '1.0.0';
 global.Headers = fetch.Headers;
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        console.log('VERSION ' + version);
+        const vm = getValuesFromPayload(github.context.payload);
+        const { isPullRequest, isBotEvent, isProtectedBranch } = (0, validators_1.useValidators)(vm);
+        const { getPullRequest } = (0, useGithub_1.useGithub)(vm);
+        const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
         try {
-            console.log('VERSION ' + version);
-            const vm = getValuesFromPayload(github.context.payload);
-            const { isPullRequest, isBotEvent, isProtectedBranch } = (0, validators_1.useValidators)(vm);
-            const { getPullRequest } = (0, useGithub_1.useGithub)(vm);
-            const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
             const pullRequest = yield getPullRequest();
             console.log(`GitHub event name: ${vm.githubEventName}`);
             console.log(`Pull Request title: ${pullRequest.title}`);
