@@ -65,7 +65,6 @@ function useAzureBoards(env) {
                     }
                 });
             }
-            console.log('Found work items:' + idList.toString());
             return idList;
         }
         catch (err) {
@@ -210,14 +209,14 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.useGithub = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const node_fetch_1 = __importDefault(__nccwpck_require__(6882));
-function useGithub() {
+function useGithub(env) {
     const getRequestHeaders = (token) => {
         const h = new Headers();
         const auth = 'token ' + token;
         h.append('Authorization', auth);
         return h;
     };
-    const getPullRequest = (env) => __awaiter(this, void 0, void 0, function* () {
+    const getPullRequest = () => __awaiter(this, void 0, void 0, function* () {
         try {
             console.log('Getting pull request');
             const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${env.pullRequestNumber}`;
@@ -330,9 +329,9 @@ function run() {
             console.log('VERSION ' + version);
             const vm = getValuesFromPayload(github.context.payload);
             const { isPullRequest, isBotEvent, isProtectedBranch } = (0, validators_1.useValidators)(vm);
-            const { getPullRequest } = (0, useGithub_1.useGithub)();
+            const { getPullRequest } = (0, useGithub_1.useGithub)(vm);
             const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
-            const pullRequest = yield getPullRequest(vm);
+            const pullRequest = yield getPullRequest();
             console.log(`GitHub event name: ${vm.githubEventName}`);
             console.log(`Pull Request title: ${pullRequest.title}`);
             console.log(`Pull Request body: ${pullRequest.body}`);
@@ -344,8 +343,8 @@ function run() {
                 try {
                     let workItemIds = getWorkItemIdsFromPullRequest(pullRequest);
                     if (workItemIds != null && workItemIds.length > 0) {
+                        console.log('Found work items: ' + workItemIds.toString());
                         workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
-                            console.log(`Update work item: ${workItemId}`);
                             yield updateWorkItem(workItemId, pullRequest);
                         }));
                     }
@@ -369,7 +368,6 @@ function run() {
                     yield updateWorkItem(workItemId, pullRequest);
                 }
             }
-            console.log('Work item ' + workItemId + ' was updated successfully');
         }
         catch (err) {
             core.setFailed(err.toString());

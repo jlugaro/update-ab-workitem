@@ -17,7 +17,7 @@ async function run(): Promise<void> {
 
     const {isPullRequest, isBotEvent, isProtectedBranch} = useValidators(vm)
 
-    const {getPullRequest} = useGithub()
+    const {getPullRequest} = useGithub(vm)
 
     const {
       getWorkItemIdsFromPullRequest,
@@ -25,7 +25,7 @@ async function run(): Promise<void> {
       updateWorkItem
     } = useAzureBoards(vm)
 
-    const pullRequest = await getPullRequest(vm)
+    const pullRequest = await getPullRequest()
 
     console.log(`GitHub event name: ${vm.githubEventName}`)
 

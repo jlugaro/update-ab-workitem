@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import {actionEnvModel} from '../models/actionEnvModel'
 import fetch from 'node-fetch'
 
-export function useGithub() {
+export function useGithub(env: actionEnvModel) {
   const getRequestHeaders = (token: string) => {
     const h = new Headers()
     const auth = 'token ' + token
@@ -10,7 +10,7 @@ export function useGithub() {
     return h
   }
 
-  const getPullRequest = async (env: actionEnvModel): Promise<any> => {
+  const getPullRequest = async (): Promise<any> => {
     try {
       console.log('Getting pull request')
 
