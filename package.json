@@ -4,7 +4,6 @@
   "private": true,
   "description": "update work item state on pull request change",
   "main": "lib/main.js",
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "format": "prettier --write '**/*.ts'",

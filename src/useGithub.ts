@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import {actionEnvModel} from './models/actionEnvModel'
-//import fetch from 'node-fetch'
+import fetch from 'node-fetch'
 
 export function useGithub() {
   const getRequestHeaders = (token: string) => {
