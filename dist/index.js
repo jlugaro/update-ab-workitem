@@ -115,15 +115,15 @@ function useAzureBoards(env) {
                 yield handleMergedPr(workItemId);
             }
             else if (pullRequest.state == 'open') {
-                console.log('Event: Pull Request was opened ' + env.openState);
+                console.log('Event: Pull Request was opened, moving to: ' + env.openState);
                 yield handleOpenedPr(workItemId);
             }
             else if (pullRequest.state == 'closed') {
-                console.log('Event: Pull Request was closed ' + env.inProgressState);
+                console.log('Event: Pull Request was closed, moving to: ' + env.inProgressState);
                 yield handleClosedPr(workItemId);
             }
             else {
-                console.log('Event: Branch was pushed ' + env.inProgressState);
+                console.log('Event: Branch was pushed, moving to: ' + env.inProgressState);
                 yield handleOpenBranch(workItemId);
             }
         }
