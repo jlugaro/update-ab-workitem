@@ -8,22 +8,17 @@ export function useAzureBoards(env: actionEnvModel) {
       const idList: string[] = []
       const matches = text.match(/[AB#(0-9)]*/g)
 
-      console.log(`getWorkItemIdsFromText: ${text}`)
-      console.log(`matches: ${matches}`)
-
       if (matches) {
         matches.forEach(id => {
           if (id && id.match(/[AB#]+/g)) {
             const newId = id.replace(/[AB#]*/g, '')
             if (newId) {
               idList.push(newId)
-              console.log(`Added work item: ${newId}`)
             }
           }
         })
       }
-
-      console.log('Found matches:' + idList.toString())
+      console.log('Found work items:' + idList.toString())
 
       return idList
     } catch (err) {
@@ -51,7 +46,7 @@ export function useAzureBoards(env: actionEnvModel) {
   }
 
   const updateWorkItem = async (workItemId: string, pullRequest: any) => {
-    console.log('Updating work item with work item ID: ' + workItemId)
+    console.log('Updating work item: ' + workItemId)
 
     let authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(
       env.adoPAT
@@ -65,9 +60,7 @@ export function useAzureBoards(env: actionEnvModel) {
     let client = await connection.getWorkItemTrackingApi()
     let workItem: any = await client.getWorkItem(<number>(<unknown>workItemId))
 
-    console.log(
-      'Detected Work Item Type: ' + workItem.fields['System.WorkItemType']
-    )
+    console.log('Work Item Type: ' + workItem.fields['System.WorkItemType'])
 
     if (workItem.fields['System.State'] == env.closedState) {
       console.log('WorkItem is already closed and cannot be updated.')
@@ -86,16 +79,16 @@ export function useAzureBoards(env: actionEnvModel) {
       )
     } else {
       if (pullRequest.status == '204') {
-        console.log('PR IS MERGED')
+        console.log('Event: Pull Request was merged')
         await handleMergedPr(workItemId)
       } else if (pullRequest.state == 'open') {
-        console.log('PR IS OPENED: ' + env.openState)
+        console.log('Event: Pull Request was opened ' + env.openState)
         await handleOpenedPr(workItemId)
       } else if (pullRequest.state == 'closed') {
-        console.log('PR IS CLOSED: ' + env.inProgressState)
+        console.log('Event: Pull Request was closed ' + env.inProgressState)
         await handleClosedPr(workItemId)
       } else {
-        console.log('BRANCH IS OPEN: ' + env.inProgressState)
+        console.log('Event: Branch was pushed ' + env.inProgressState)
         await handleOpenBranch(workItemId)
       }
     }

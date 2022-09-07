@@ -17,7 +17,6 @@ export function useGithub() {
       const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${env.pullRequestNumber}`
 
       console.log(`Pull Request URL: ${requestUrl}`)
-      console.log(env.githubPAT)
 
       const res = await fetch(requestUrl, {
         method: 'GET',

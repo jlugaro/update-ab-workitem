@@ -17,12 +17,17 @@ async function run(): Promise<void> {
     const {getPullRequest} = useGithub()
 
     const pullRequest = await getPullRequest(vm)
-    console.log(console.log(`Pull Request object: ${pullRequest}`))
+
+    console.log(`Action -> Event -> ${process.env.GITHUB_EVENT_NAME}`)
+
+    console.log(
+      `Pull Request -> title: ${pullRequest.title} body: ${pullRequest.body}`
+    )
 
     const {getWorkItemsFromText, getWorkItemIdFromBranchName, updateWorkItem} =
       useAzureBoards(vm)
 
-    if (process?.env?.GITHUB_EVENT_NAME?.includes('pull_request')) {
+    if (process.env.GITHUB_EVENT_NAME?.includes('pull_request')) {
       console.log('PR event')
 
       if (

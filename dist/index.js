@@ -56,16 +56,17 @@ const actionEnvModel_1 = __nccwpck_require__(1634);
 const version = '1.0.0';
 global.Headers = fetch.Headers;
 function run() {
-    var _a, _b;
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             console.log('VERSION ' + version);
             const vm = getValuesFromPayload(github.context.payload);
             const { getPullRequest } = (0, useGithub_1.useGithub)();
             const pullRequest = yield getPullRequest(vm);
-            console.log(console.log(`Pull Request object: ${pullRequest}`));
+            console.log(`Action -> Event -> ${process.env.GITHUB_EVENT_NAME}`);
+            console.log(`Pull Request -> title: ${pullRequest.title} body: ${pullRequest.body}`);
             const { getWorkItemsFromText, getWorkItemIdFromBranchName, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
-            if ((_b = (_a = process === null || process === void 0 ? void 0 : process.env) === null || _a === void 0 ? void 0 : _a.GITHUB_EVENT_NAME) === null || _b === void 0 ? void 0 : _b.includes('pull_request')) {
+            if ((_a = process.env.GITHUB_EVENT_NAME) === null || _a === void 0 ? void 0 : _a.includes('pull_request')) {
                 console.log('PR event');
                 if (typeof pullRequest.title != 'undefined' &&
                     pullRequest.title.includes('bot')) {
@@ -194,20 +195,17 @@ function useAzureBoards(env) {
         try {
             const idList = [];
             const matches = text.match(/[AB#(0-9)]*/g);
-            console.log(`getWorkItemIdsFromText: ${text}`);
-            console.log(`matches: ${matches}`);
             if (matches) {
                 matches.forEach(id => {
                     if (id && id.match(/[AB#]+/g)) {
                         const newId = id.replace(/[AB#]*/g, '');
                         if (newId) {
                             idList.push(newId);
-                            console.log(`Added work item: ${newId}`);
                         }
                     }
                 });
             }
-            console.log('Found matches:' + idList.toString());
+            console.log('Found work items:' + idList.toString());
             return idList;
         }
         catch (err) {
@@ -227,12 +225,12 @@ function useAzureBoards(env) {
         }
     };
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
-        console.log('Updating work item with work item ID: ' + workItemId);
+        console.log('Updating work item: ' + workItemId);
         let authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(env.adoPAT);
         let connection = new azureDevOpsHandler.WebApi(`https://dev.azure.com/${env.adoOrganization}`, authHandler);
         let client = yield connection.getWorkItemTrackingApi();
         let workItem = yield client.getWorkItem(workItemId);
-        console.log('Detected Work Item Type: ' + workItem.fields['System.WorkItemType']);
+        console.log('Work Item Type: ' + workItem.fields['System.WorkItemType']);
         if (workItem.fields['System.State'] == env.closedState) {
             console.log('WorkItem is already closed and cannot be updated.');
             return;
@@ -247,19 +245,19 @@ function useAzureBoards(env) {
         }
         else {
             if (pullRequest.status == '204') {
-                console.log('PR IS MERGED');
+                console.log('Event: Pull Request was merged');
                 yield handleMergedPr(workItemId);
             }
             else if (pullRequest.state == 'open') {
-                console.log('PR IS OPENED: ' + env.openState);
+                console.log('Event: Pull Request was opened ' + env.openState);
                 yield handleOpenedPr(workItemId);
             }
             else if (pullRequest.state == 'closed') {
-                console.log('PR IS CLOSED: ' + env.inProgressState);
+                console.log('Event: Pull Request was closed ' + env.inProgressState);
                 yield handleClosedPr(workItemId);
             }
             else {
-                console.log('BRANCH IS OPEN: ' + env.inProgressState);
+                console.log('Event: Branch was pushed ' + env.inProgressState);
                 yield handleOpenBranch(workItemId);
             }
         }
@@ -356,7 +354,6 @@ function useGithub() {
             console.log('Getting pull request');
             const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${env.pullRequestNumber}`;
             console.log(`Pull Request URL: ${requestUrl}`);
-            console.log(env.githubPAT);
             const res = yield (0, node_fetch_1.default)(requestUrl, {
                 method: 'GET',
                 headers: getRequestHeaders(env.githubPAT)
