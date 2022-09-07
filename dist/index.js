@@ -337,13 +337,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.useGithub = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const node_fetch_1 = __importDefault(__nccwpck_require__(6882));
+//import fetch from 'node-fetch'
 function useGithub() {
     const getRequestHeaders = (token) => {
         const h = new Headers();
@@ -357,12 +354,11 @@ function useGithub() {
             const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${env.pullRequestNumber}`;
             console.log(`Pull Request URL: ${requestUrl}`);
             console.log(env.githubPAT);
-            yield (0, node_fetch_1.default)(requestUrl, {
+            const res = yield fetch(requestUrl, {
                 method: 'GET',
                 headers: getRequestHeaders(env.githubPAT)
-            }).then(response => {
-                return response.json();
             });
+            return res.json();
         }
         catch (err) {
             core.setFailed(err.toString());

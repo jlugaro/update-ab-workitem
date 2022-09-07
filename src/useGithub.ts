@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import {actionEnvModel} from './models/actionEnvModel'
-import fetch from 'node-fetch'
+//import fetch from 'node-fetch'
 
 export function useGithub() {
   const getRequestHeaders = (token: string) => {
@@ -19,12 +19,12 @@ export function useGithub() {
       console.log(`Pull Request URL: ${requestUrl}`)
       console.log(env.githubPAT)
 
-      await fetch(requestUrl, {
+      const res = await fetch(requestUrl, {
         method: 'GET',
         headers: getRequestHeaders(env.githubPAT)
-      }).then(response => {
-        return response.json()
       })
+
+      return res.json()
     } catch (err: any) {
       core.setFailed(err.toString())
     }
