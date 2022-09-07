@@ -9,146 +9,7 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 
 /***/ }),
 
-/***/ 3109:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__nccwpck_require__(2186));
-const fetch = __importStar(__nccwpck_require__(6882));
-const github = __importStar(__nccwpck_require__(5438));
-const useGithub_1 = __nccwpck_require__(6087);
-const useAzureBoards_1 = __nccwpck_require__(1375);
-const actionEnvModel_1 = __nccwpck_require__(1634);
-const version = '1.0.0';
-global.Headers = fetch.Headers;
-function run() {
-    var _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            console.log('VERSION ' + version);
-            const vm = getValuesFromPayload(github.context.payload);
-            const { getPullRequest } = (0, useGithub_1.useGithub)();
-            const pullRequest = yield getPullRequest(vm);
-            console.log(`Action -> Event -> ${process.env.GITHUB_EVENT_NAME}`);
-            console.log(`Pull Request -> title: ${pullRequest.title} body: ${pullRequest.body}`);
-            const { getWorkItemsFromText, getWorkItemIdFromBranchName, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
-            if ((_a = process.env.GITHUB_EVENT_NAME) === null || _a === void 0 ? void 0 : _a.includes('pull_request')) {
-                console.log('PR event');
-                if (typeof pullRequest.title != 'undefined' &&
-                    pullRequest.title.includes('bot')) {
-                    console.log('Bot branches are not to be processed');
-                    return;
-                }
-                try {
-                    let workItemIds = getWorkItemsFromText(pullRequest.title);
-                    if (workItemIds == null || workItemIds.length == 0) {
-                        workItemIds = getWorkItemsFromText(pullRequest.body);
-                    }
-                    if (workItemIds != null && workItemIds.length > 0) {
-                        workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
-                            console.log(`Update work item: ${workItemId}`);
-                            yield updateWorkItem(workItemId, pullRequest);
-                        }));
-                    }
-                    else {
-                        console.log(`No work items found to update.`);
-                    }
-                }
-                catch (err) {
-                    core.setFailed('Wrong PR title format. Make sure it includes AB#<ticket_number>.');
-                    core.setFailed(err.toString());
-                }
-            }
-            else {
-                console.log('Branch event');
-                if (vm.branchName.includes('master') || vm.branchName.includes('main')) {
-                    console.log('Automation will not handle commits pushed to master');
-                    return;
-                }
-                var workItemId = getWorkItemIdFromBranchName(vm.branchName);
-                if (workItemId != null) {
-                    yield updateWorkItem(workItemId, pullRequest);
-                }
-            }
-            console.log('Work item ' + workItemId + ' was updated successfully');
-        }
-        catch (err) {
-            core.setFailed(err.toString());
-        }
-    });
-}
-function getValuesFromPayload(payload) {
-    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.ghrepo_owner, process.env.ghrepo, process.env.pull_number, process.env.branch_name, process.env.closedstate, process.env.propenstate, process.env.inprogressstate);
-}
-run();
-
-
-/***/ }),
-
-/***/ 1634:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.actionEnvModel = void 0;
-class actionEnvModel {
-    constructor(action, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, branchName, closedState, openState, inProgressState) {
-        this.action = action !== null && action !== void 0 ? action : '';
-        this.githubPAT = githubPAT !== null && githubPAT !== void 0 ? githubPAT : '';
-        this.adoPAT = adoPAT !== null && adoPAT !== void 0 ? adoPAT : '';
-        this.adoProject = adoProject !== null && adoProject !== void 0 ? adoProject : '';
-        this.adoOrganization = adoOrganization !== null && adoOrganization !== void 0 ? adoOrganization : '';
-        this.adoOrganizationUrl = adoOrganizationUrl !== null && adoOrganizationUrl !== void 0 ? adoOrganizationUrl : '';
-        this.repoOwner = repoOwner !== null && repoOwner !== void 0 ? repoOwner : '';
-        this.repoName = repoName !== null && repoName !== void 0 ? repoName : '';
-        this.pullRequestNumber = pullRequestNumber !== null && pullRequestNumber !== void 0 ? pullRequestNumber : '';
-        this.branchName = branchName !== null && branchName !== void 0 ? branchName : '';
-        this.closedState = closedState !== null && closedState !== void 0 ? closedState : '';
-        this.openState = openState !== null && openState !== void 0 ? openState : '';
-        this.inProgressState = inProgressState !== null && inProgressState !== void 0 ? inProgressState : '';
-    }
-}
-exports.actionEnvModel = actionEnvModel;
-
-
-/***/ }),
-
-/***/ 1375:
+/***/ 973:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -189,7 +50,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.useAzureBoards = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const azureDevOpsHandler = __importStar(__nccwpck_require__(7967));
-//env: actionEnvModel, pullRequest: any
 function useAzureBoards(env) {
     const getWorkItemsFromText = (text) => {
         try {
@@ -223,6 +83,13 @@ function useAzureBoards(env) {
         catch (err) {
             core.setFailed('Branch name format is wrong. Make sure it starts from AB#<ticket_number>');
         }
+    };
+    const getWorkItemIdsFromPullRequest = (pullRequest) => {
+        let workItemIds = getWorkItemsFromText(pullRequest.title);
+        if (workItemIds == null || workItemIds.length == 0) {
+            workItemIds = getWorkItemsFromText(pullRequest.body);
+        }
+        return workItemIds;
     };
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
         console.log('Updating work item: ' + workItemId);
@@ -288,6 +155,7 @@ function useAzureBoards(env) {
         yield setWorkItemState(workItemId, env.inProgressState);
     });
     return {
+        getWorkItemIdsFromPullRequest,
         getWorkItemsFromText,
         getWorkItemIdFromBranchName,
         updateWorkItem
@@ -298,7 +166,7 @@ exports.useAzureBoards = useAzureBoards;
 
 /***/ }),
 
-/***/ 6087:
+/***/ 6435:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -369,6 +237,179 @@ function useGithub() {
     };
 }
 exports.useGithub = useGithub;
+
+
+/***/ }),
+
+/***/ 2931:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.useValidators = void 0;
+function useValidators(env) {
+    const isPullRequest = () => {
+        var _a;
+        return (_a = env.githubEventName) === null || _a === void 0 ? void 0 : _a.includes('pull_request');
+    };
+    const isBranchEvent = () => {
+        var _a;
+        return (_a = env.githubEventName) === null || _a === void 0 ? void 0 : _a.includes('push');
+    };
+    const isBotEvent = (pullRequest) => {
+        return (pullRequest.title != null &&
+            (pullRequest.title.includes('dependabot') ||
+                pullRequest.title.includes('bot')));
+    };
+    const isProtectedBranch = () => {
+        return env.branchName.includes('master') || env.branchName.includes('main');
+    };
+    return {
+        isPullRequest,
+        isBranchEvent,
+        isBotEvent,
+        isProtectedBranch
+    };
+}
+exports.useValidators = useValidators;
+
+
+/***/ }),
+
+/***/ 3109:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const fetch = __importStar(__nccwpck_require__(6882));
+const github = __importStar(__nccwpck_require__(5438));
+const useGithub_1 = __nccwpck_require__(6435);
+const useAzureBoards_1 = __nccwpck_require__(973);
+const actionEnvModel_1 = __nccwpck_require__(1634);
+const validators_1 = __nccwpck_require__(2931);
+const version = '1.0.0';
+global.Headers = fetch.Headers;
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            console.log('VERSION ' + version);
+            const vm = getValuesFromPayload(github.context.payload);
+            const { isPullRequest, isBotEvent, isProtectedBranch } = (0, validators_1.useValidators)(vm);
+            const { getPullRequest } = (0, useGithub_1.useGithub)();
+            const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
+            const pullRequest = yield getPullRequest(vm);
+            console.log(`GitHub event name: ${vm.githubEventName}`);
+            console.log(`Pull Request title: ${pullRequest.title}`);
+            console.log(`Pull Request body: ${pullRequest.body}`);
+            if (isPullRequest()) {
+                if (isBotEvent(pullRequest)) {
+                    console.log('Bot branches are not to be processed');
+                    return;
+                }
+                try {
+                    let workItemIds = getWorkItemIdsFromPullRequest(pullRequest);
+                    if (workItemIds != null && workItemIds.length > 0) {
+                        workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
+                            console.log(`Update work item: ${workItemId}`);
+                            yield updateWorkItem(workItemId, pullRequest);
+                        }));
+                    }
+                    else {
+                        console.log(`No work items found to update.`);
+                    }
+                }
+                catch (err) {
+                    core.setFailed('Wrong PR title format. Make sure it includes AB#<ticket_number>.');
+                    core.setFailed(err.toString());
+                }
+            }
+            else {
+                console.log('Branch event');
+                if (isProtectedBranch()) {
+                    console.log('Automation will not handle commits pushed to master');
+                    return;
+                }
+                var workItemId = getWorkItemIdFromBranchName(vm.branchName);
+                if (workItemId != null) {
+                    yield updateWorkItem(workItemId, pullRequest);
+                }
+            }
+            console.log('Work item ' + workItemId + ' was updated successfully');
+        }
+        catch (err) {
+            core.setFailed(err.toString());
+        }
+    });
+}
+function getValuesFromPayload(payload) {
+    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.ghrepo_owner, process.env.ghrepo, process.env.pull_number, process.env.branch_name, process.env.closedstate, process.env.propenstate, process.env.inprogressstate);
+}
+run();
+
+
+/***/ }),
+
+/***/ 1634:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.actionEnvModel = void 0;
+class actionEnvModel {
+    constructor(action, githubEventName, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, branchName, closedState, openState, inProgressState) {
+        this.action = action !== null && action !== void 0 ? action : '';
+        this.githubEventName = githubEventName !== null && githubEventName !== void 0 ? githubEventName : '';
+        this.githubPAT = githubPAT !== null && githubPAT !== void 0 ? githubPAT : '';
+        this.adoPAT = adoPAT !== null && adoPAT !== void 0 ? adoPAT : '';
+        this.adoProject = adoProject !== null && adoProject !== void 0 ? adoProject : '';
+        this.adoOrganization = adoOrganization !== null && adoOrganization !== void 0 ? adoOrganization : '';
+        this.adoOrganizationUrl = adoOrganizationUrl !== null && adoOrganizationUrl !== void 0 ? adoOrganizationUrl : '';
+        this.repoOwner = repoOwner !== null && repoOwner !== void 0 ? repoOwner : '';
+        this.repoName = repoName !== null && repoName !== void 0 ? repoName : '';
+        this.pullRequestNumber = pullRequestNumber !== null && pullRequestNumber !== void 0 ? pullRequestNumber : '';
+        this.branchName = branchName !== null && branchName !== void 0 ? branchName : '';
+        this.closedState = closedState !== null && closedState !== void 0 ? closedState : '';
+        this.openState = openState !== null && openState !== void 0 ? openState : '';
+        this.inProgressState = inProgressState !== null && inProgressState !== void 0 ? inProgressState : '';
+    }
+}
+exports.actionEnvModel = actionEnvModel;
 
 
 /***/ }),

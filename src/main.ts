@@ -1,9 +1,10 @@
 import * as core from '@actions/core'
 import * as fetch from 'node-fetch'
 import * as github from '@actions/github'
-import {useGithub} from './useGithub'
-import {useAzureBoards} from './useAzureBoards'
+import {useGithub} from './helpers/useGithub'
+import {useAzureBoards} from './helpers/useAzureBoards'
 import {actionEnvModel} from './models/actionEnvModel'
+import {useValidators} from './helpers/validators'
 
 const version = '1.0.0'
 global.Headers = fetch.Headers
@@ -14,36 +15,32 @@ async function run(): Promise<void> {
 
     const vm = getValuesFromPayload(github.context.payload)
 
+    const {isPullRequest, isBotEvent, isProtectedBranch} = useValidators(vm)
+
     const {getPullRequest} = useGithub()
+
+    const {
+      getWorkItemIdsFromPullRequest,
+      getWorkItemIdFromBranchName,
+      updateWorkItem
+    } = useAzureBoards(vm)
 
     const pullRequest = await getPullRequest(vm)
 
-    console.log(`Action -> Event -> ${process.env.GITHUB_EVENT_NAME}`)
+    console.log(`GitHub event name: ${vm.githubEventName}`)
 
-    console.log(
-      `Pull Request -> title: ${pullRequest.title} body: ${pullRequest.body}`
-    )
+    console.log(`Pull Request title: ${pullRequest.title}`)
 
-    const {getWorkItemsFromText, getWorkItemIdFromBranchName, updateWorkItem} =
-      useAzureBoards(vm)
+    console.log(`Pull Request body: ${pullRequest.body}`)
 
-    if (process.env.GITHUB_EVENT_NAME?.includes('pull_request')) {
-      console.log('PR event')
-
-      if (
-        typeof pullRequest.title != 'undefined' &&
-        pullRequest.title.includes('bot')
-      ) {
+    if (isPullRequest()) {
+      if (isBotEvent(pullRequest)) {
         console.log('Bot branches are not to be processed')
         return
       }
 
       try {
-        let workItemIds = getWorkItemsFromText(pullRequest.title)
-
-        if (workItemIds == null || workItemIds.length == 0) {
-          workItemIds = getWorkItemsFromText(pullRequest.body)
-        }
+        let workItemIds = getWorkItemIdsFromPullRequest(pullRequest)
 
         if (workItemIds != null && workItemIds.length > 0) {
           workItemIds.forEach(async (workItemId: string) => {
@@ -62,7 +59,7 @@ async function run(): Promise<void> {
     } else {
       console.log('Branch event')
 
-      if (vm.branchName.includes('master') || vm.branchName.includes('main')) {
+      if (isProtectedBranch()) {
         console.log('Automation will not handle commits pushed to master')
         return
       }
@@ -81,6 +78,7 @@ async function run(): Promise<void> {
 function getValuesFromPayload(payload: any) {
   return new actionEnvModel(
     payload.action,
+    process.env.GITHUB_EVENT_NAME,
     process.env.gh_token,
     process.env.ado_token,
     process.env.ado_project,

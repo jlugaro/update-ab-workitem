@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as azureDevOpsHandler from 'azure-devops-node-api'
-import {actionEnvModel} from './models/actionEnvModel'
-//env: actionEnvModel, pullRequest: any
+import {actionEnvModel} from '../models/actionEnvModel'
+
 export function useAzureBoards(env: actionEnvModel) {
   const getWorkItemsFromText = (text: string) => {
     try {
@@ -43,6 +43,16 @@ export function useAzureBoards(env: actionEnvModel) {
         'Branch name format is wrong. Make sure it starts from AB#<ticket_number>'
       )
     }
+  }
+
+  const getWorkItemIdsFromPullRequest = (pullRequest: any) => {
+    let workItemIds = getWorkItemsFromText(pullRequest.title)
+
+    if (workItemIds == null || workItemIds.length == 0) {
+      workItemIds = getWorkItemsFromText(pullRequest.body)
+    }
+
+    return workItemIds
   }
 
   const updateWorkItem = async (workItemId: string, pullRequest: any) => {
@@ -140,6 +150,7 @@ export function useAzureBoards(env: actionEnvModel) {
   }
 
   return {
+    getWorkItemIdsFromPullRequest,
     getWorkItemsFromText,
     getWorkItemIdFromBranchName,
     updateWorkItem

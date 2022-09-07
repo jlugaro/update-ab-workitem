@@ -1,5 +1,6 @@
 export class actionEnvModel {
   action: string
+  githubEventName: string
   githubPAT: string
   adoPAT: string
   adoProject: string
@@ -15,6 +16,7 @@ export class actionEnvModel {
 
   constructor(
     action: string | undefined,
+    githubEventName: string | undefined,
     githubPAT: string | undefined,
     adoPAT: string | undefined,
     adoProject: string | undefined,
@@ -29,6 +31,7 @@ export class actionEnvModel {
     inProgressState: string | undefined
   ) {
     this.action = action ?? ''
+    this.githubEventName = githubEventName ?? ''
     this.githubPAT = githubPAT ?? ''
     this.adoPAT = adoPAT ?? ''
     this.adoProject = adoProject ?? ''
