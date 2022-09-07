@@ -356,6 +356,7 @@ function useGithub() {
             console.log('Getting pull request');
             const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${env.pullRequestNumber}`;
             console.log(`Pull Request URL: ${requestUrl}`);
+            console.log(env.githubPAT);
             yield (0, node_fetch_1.default)(requestUrl, {
                 method: 'GET',
                 headers: getRequestHeaders(env.githubPAT)
