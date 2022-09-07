@@ -18,8 +18,6 @@ export function useAzureBoards(env: actionEnvModel) {
           }
         })
       }
-      console.log('Found work items:' + idList.toString())
-
       return idList
     } catch (err) {
       core.setFailed('Wrong format. Make sure it includes AB#<ticket_number>')

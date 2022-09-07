@@ -43,8 +43,8 @@ async function run(): Promise<void> {
         let workItemIds = getWorkItemIdsFromPullRequest(pullRequest)
 
         if (workItemIds != null && workItemIds.length > 0) {
+          console.log('Found work items: ' + workItemIds.toString())
           workItemIds.forEach(async (workItemId: string) => {
-            console.log(`Update work item: ${workItemId}`)
             await updateWorkItem(workItemId, pullRequest)
           })
         } else {
@@ -69,7 +69,6 @@ async function run(): Promise<void> {
         await updateWorkItem(workItemId, pullRequest)
       }
     }
-    console.log('Work item ' + workItemId + ' was updated successfully')
   } catch (err: any) {
     core.setFailed(err.toString())
   }
