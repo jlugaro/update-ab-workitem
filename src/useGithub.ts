@@ -32,7 +32,7 @@ export async function useGithub(env: actionEnvModel): Promise<any> {
     }
   }
 
-  init()
+  await init()
 
   return {
     pullRequest
