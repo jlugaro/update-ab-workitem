@@ -1,9 +1,10 @@
 {
   "name": "typescript-work-item-state-update",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "update workitem state on pull request change",
+  "description": "update work item state on pull request change",
   "main": "lib/main.js",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "format": "prettier --write '**/*.ts'",
@@ -22,7 +23,7 @@
     "node",
     "setup"
   ],
-  "author": "",
+  "author": "John Lugaro",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.6.0",
