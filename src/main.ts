@@ -10,21 +10,21 @@ const version = '1.0.0'
 global.Headers = fetch.Headers
 
 async function run(): Promise<void> {
+  console.log('VERSION ' + version)
+
+  const vm = getValuesFromPayload(github.context.payload)
+
+  const {isPullRequest, isBotEvent, isProtectedBranch} = useValidators(vm)
+
+  const {getPullRequest} = useGithub(vm)
+
+  const {
+    getWorkItemIdsFromPullRequest,
+    getWorkItemIdFromBranchName,
+    updateWorkItem
+  } = useAzureBoards(vm)
+
   try {
-    console.log('VERSION ' + version)
-
-    const vm = getValuesFromPayload(github.context.payload)
-
-    const {isPullRequest, isBotEvent, isProtectedBranch} = useValidators(vm)
-
-    const {getPullRequest} = useGithub(vm)
-
-    const {
-      getWorkItemIdsFromPullRequest,
-      getWorkItemIdFromBranchName,
-      updateWorkItem
-    } = useAzureBoards(vm)
-
     const pullRequest = await getPullRequest()
 
     console.log(`GitHub event name: ${vm.githubEventName}`)
@@ -44,6 +44,7 @@ async function run(): Promise<void> {
 
         if (workItemIds != null && workItemIds.length > 0) {
           console.log('Found work items: ' + workItemIds.toString())
+
           workItemIds.forEach(async (workItemId: string) => {
             await updateWorkItem(workItemId, pullRequest)
           })
