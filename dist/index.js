@@ -61,8 +61,10 @@ function run() {
         try {
             console.log('VERSION ' + version);
             const vm = getValuesFromPayload(github.context.payload);
-            const { pullRequest } = yield (0, useGithub_1.useGithub)(vm);
-            const { getWorkItemsFromText, getWorkItemIdFromBranchName, updateWorkItem } = yield (0, useAzureBoards_1.useAzureBoards)(vm, pullRequest);
+            const { getPullRequest } = (0, useGithub_1.useGithub)();
+            const pullRequest = yield getPullRequest(vm);
+            console.log(console.log(`Pull Request object: ${pullRequest}`));
+            const { getWorkItemsFromText, getWorkItemIdFromBranchName, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
             if ((_b = (_a = process === null || process === void 0 ? void 0 : process.env) === null || _a === void 0 ? void 0 : _a.GITHUB_EVENT_NAME) === null || _b === void 0 ? void 0 : _b.includes('pull_request')) {
                 console.log('PR event');
                 if (typeof pullRequest.title != 'undefined' &&
@@ -73,12 +75,12 @@ function run() {
                 try {
                     let workItemIds = getWorkItemsFromText(pullRequest.title);
                     if (workItemIds == null || workItemIds.length == 0) {
-                        workItemIds = yield getWorkItemsFromText(pullRequest.body);
+                        workItemIds = getWorkItemsFromText(pullRequest.body);
                     }
-                    if (workItemIds !== null && workItemIds.length > 0) {
+                    if (workItemIds != null && workItemIds.length > 0) {
                         workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
                             console.log(`Update work item: ${workItemId}`);
-                            yield updateWorkItem(workItemId);
+                            yield updateWorkItem(workItemId, pullRequest);
                         }));
                     }
                     else {
@@ -96,8 +98,10 @@ function run() {
                     console.log('Automation will not handle commits pushed to master');
                     return;
                 }
-                var workItemId = yield getWorkItemIdFromBranchName();
-                yield updateWorkItem(workItemId);
+                var workItemId = getWorkItemIdFromBranchName(vm.branchName);
+                if (workItemId != null) {
+                    yield updateWorkItem(workItemId, pullRequest);
+                }
             }
             console.log('Work item ' + workItemId + ' was updated successfully');
         }
@@ -184,114 +188,112 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.useAzureBoards = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const azureDevOpsHandler = __importStar(__nccwpck_require__(7967));
-function useAzureBoards(env, pullRequest) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const getWorkItemsFromText = (text) => {
-            try {
-                const idList = [];
-                const matches = text.match(/[AB#(0-9)]*/g);
-                console.log(`getWorkItemIdsFromText: ${text}`);
-                console.log(`matches: ${matches}`);
-                if (matches) {
-                    matches.forEach(id => {
-                        if (id && id.match(/[AB#]+/g)) {
-                            const newId = id.replace(/[AB#]*/g, '');
-                            if (newId) {
-                                idList.push(newId);
-                                console.log(`Added work item: ${newId}`);
-                            }
+//env: actionEnvModel, pullRequest: any
+function useAzureBoards(env) {
+    const getWorkItemsFromText = (text) => {
+        try {
+            const idList = [];
+            const matches = text.match(/[AB#(0-9)]*/g);
+            console.log(`getWorkItemIdsFromText: ${text}`);
+            console.log(`matches: ${matches}`);
+            if (matches) {
+                matches.forEach(id => {
+                    if (id && id.match(/[AB#]+/g)) {
+                        const newId = id.replace(/[AB#]*/g, '');
+                        if (newId) {
+                            idList.push(newId);
+                            console.log(`Added work item: ${newId}`);
                         }
-                    });
-                }
-                console.log('Found matches:' + idList.toString());
-                return idList;
+                    }
+                });
             }
-            catch (err) {
-                core.setFailed('Wrong format. Make sure it includes AB#<ticket_number>');
+            console.log('Found matches:' + idList.toString());
+            return idList;
+        }
+        catch (err) {
+            core.setFailed('Wrong format. Make sure it includes AB#<ticket_number>');
+        }
+    };
+    const getWorkItemIdFromBranchName = (branchName) => {
+        try {
+            const foundMatches = branchName.match(/([0-9]+)/g);
+            console.log('Found matches on branch name' + foundMatches);
+            const workItemId = foundMatches && foundMatches[3];
+            console.log('Work item ID: ' + workItemId);
+            return workItemId;
+        }
+        catch (err) {
+            core.setFailed('Branch name format is wrong. Make sure it starts from AB#<ticket_number>');
+        }
+    };
+    const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
+        console.log('Updating work item with work item ID: ' + workItemId);
+        let authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(env.adoPAT);
+        let connection = new azureDevOpsHandler.WebApi(`https://dev.azure.com/${env.adoOrganization}`, authHandler);
+        let client = yield connection.getWorkItemTrackingApi();
+        let workItem = yield client.getWorkItem(workItemId);
+        console.log('Detected Work Item Type: ' + workItem.fields['System.WorkItemType']);
+        if (workItem.fields['System.State'] == env.closedState) {
+            console.log('WorkItem is already closed and cannot be updated.');
+            return;
+        }
+        else if (workItem.fields['System.State'] == env.openState &&
+            pullRequest.status != '204') {
+            console.log('WorkItem is already in a state of PR open, will not update.');
+            return;
+        }
+        else if (workItem.fields['System.WorkItemType'] == 'Product Backlog Item') {
+            console.log('Product backlog item is not going to be automatically updated - needs to be updated manually.');
+        }
+        else {
+            if (pullRequest.status == '204') {
+                console.log('PR IS MERGED');
+                yield handleMergedPr(workItemId);
             }
-        };
-        const getWorkItemIdFromBranchName = () => {
-            const branchName = env.branchName;
-            try {
-                const foundMatches = branchName.match(/([0-9]+)/g);
-                console.log('Found matches on branch name' + foundMatches);
-                const workItemId = foundMatches && foundMatches[3];
-                console.log('Work item ID: ' + workItemId);
-                return workItemId;
+            else if (pullRequest.state == 'open') {
+                console.log('PR IS OPENED: ' + env.openState);
+                yield handleOpenedPr(workItemId);
             }
-            catch (err) {
-                core.setFailed('Branch name format is wrong. Make sure it starts from AB#<ticket_number>');
-            }
-        };
-        const updateWorkItem = (workItemId) => __awaiter(this, void 0, void 0, function* () {
-            console.log('Updating work item with work item ID: ' + workItemId);
-            let authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(env.adoPAT);
-            let connection = new azureDevOpsHandler.WebApi(`https://dev.azure.com/${env.adoOrganization}`, authHandler);
-            let client = yield connection.getWorkItemTrackingApi();
-            let workItem = yield client.getWorkItem(workItemId);
-            console.log('Detected Work Item Type: ' + workItem.fields['System.WorkItemType']);
-            if (workItem.fields['System.State'] == env.closedState) {
-                console.log('WorkItem is already closed and cannot be updated.');
-                return;
-            }
-            else if (workItem.fields['System.State'] == env.openState &&
-                pullRequest.status != '204') {
-                console.log('WorkItem is already in a state of PR open, will not update.');
-                return;
-            }
-            else if (workItem.fields['System.WorkItemType'] == 'Product Backlog Item') {
-                console.log('Product backlog item is not going to be automatically updated - needs to be updated manually.');
+            else if (pullRequest.state == 'closed') {
+                console.log('PR IS CLOSED: ' + env.inProgressState);
+                yield handleClosedPr(workItemId);
             }
             else {
-                if (pullRequest.status == '204') {
-                    console.log('PR IS MERGED');
-                    yield handleMergedPr(workItemId);
-                }
-                else if (pullRequest.state == 'open') {
-                    console.log('PR IS OPENED: ' + env.openState);
-                    yield handleOpenedPr(workItemId);
-                }
-                else if (pullRequest.state == 'closed') {
-                    console.log('PR IS CLOSED: ' + env.inProgressState);
-                    yield handleClosedPr(workItemId);
-                }
-                else {
-                    console.log('BRANCH IS OPEN: ' + env.inProgressState);
-                    yield handleOpenBranch(workItemId);
-                }
+                console.log('BRANCH IS OPEN: ' + env.inProgressState);
+                yield handleOpenBranch(workItemId);
             }
-        });
-        const setWorkItemState = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-            const authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(env.adoPAT);
-            const connection = new azureDevOpsHandler.WebApi(`https://dev.azure.com/${env.adoOrganization}`, authHandler);
-            const client = yield connection.getWorkItemTrackingApi();
-            const patchDocument = [
-                {
-                    op: 'add',
-                    path: '/fields/System.State',
-                    value: state
-                }
-            ];
-            yield client.updateWorkItem([], patchDocument, workItemId, env.adoProject, false);
-        });
-        const handleMergedPr = (workItemId) => __awaiter(this, void 0, void 0, function* () {
-            yield setWorkItemState(workItemId, env.closedState);
-        });
-        const handleOpenedPr = (workItemId) => __awaiter(this, void 0, void 0, function* () {
-            yield setWorkItemState(workItemId, env.openState);
-        });
-        const handleClosedPr = (workItemId) => __awaiter(this, void 0, void 0, function* () {
-            yield setWorkItemState(workItemId, env.inProgressState);
-        });
-        const handleOpenBranch = (workItemId) => __awaiter(this, void 0, void 0, function* () {
-            yield setWorkItemState(workItemId, env.inProgressState);
-        });
-        return {
-            getWorkItemsFromText,
-            getWorkItemIdFromBranchName,
-            updateWorkItem
-        };
+        }
     });
+    const setWorkItemState = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
+        const authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(env.adoPAT);
+        const connection = new azureDevOpsHandler.WebApi(`https://dev.azure.com/${env.adoOrganization}`, authHandler);
+        const client = yield connection.getWorkItemTrackingApi();
+        const patchDocument = [
+            {
+                op: 'add',
+                path: '/fields/System.State',
+                value: state
+            }
+        ];
+        yield client.updateWorkItem([], patchDocument, workItemId, env.adoProject, false);
+    });
+    const handleMergedPr = (workItemId) => __awaiter(this, void 0, void 0, function* () {
+        yield setWorkItemState(workItemId, env.closedState);
+    });
+    const handleOpenedPr = (workItemId) => __awaiter(this, void 0, void 0, function* () {
+        yield setWorkItemState(workItemId, env.openState);
+    });
+    const handleClosedPr = (workItemId) => __awaiter(this, void 0, void 0, function* () {
+        yield setWorkItemState(workItemId, env.inProgressState);
+    });
+    const handleOpenBranch = (workItemId) => __awaiter(this, void 0, void 0, function* () {
+        yield setWorkItemState(workItemId, env.inProgressState);
+    });
+    return {
+        getWorkItemsFromText,
+        getWorkItemIdFromBranchName,
+        updateWorkItem
+    };
 }
 exports.useAzureBoards = useAzureBoards;
 
@@ -342,37 +344,32 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.useGithub = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const node_fetch_1 = __importDefault(__nccwpck_require__(6882));
-function useGithub(env) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let pullRequest = null;
-        const getRequestHeaders = () => {
-            let h = new Headers();
-            let auth = 'token ' + env.githubPAT;
-            h.append('Authorization', auth);
-            return h;
-        };
-        const init = () => __awaiter(this, void 0, void 0, function* () {
-            try {
-                console.log('Getting pull request');
-                const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${env.pullRequestNumber}`;
-                console.log(`Pull Request URL: ${requestUrl}`);
-                yield (0, node_fetch_1.default)(requestUrl, {
-                    method: 'GET',
-                    headers: getRequestHeaders()
-                }).then(response => {
-                    pullRequest = response.json();
-                    console.log(console.log(`Pull Request object: ${pullRequest}`));
-                });
-            }
-            catch (err) {
-                core.setFailed(err.toString());
-            }
-        });
-        init();
-        return {
-            pullRequest
-        };
+function useGithub() {
+    const getRequestHeaders = (token) => {
+        const h = new Headers();
+        const auth = 'token ' + token;
+        h.append('Authorization', auth);
+        return h;
+    };
+    const getPullRequest = (env) => __awaiter(this, void 0, void 0, function* () {
+        try {
+            console.log('Getting pull request');
+            const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${env.pullRequestNumber}`;
+            console.log(`Pull Request URL: ${requestUrl}`);
+            yield (0, node_fetch_1.default)(requestUrl, {
+                method: 'GET',
+                headers: getRequestHeaders(env.githubPAT)
+            }).then(response => {
+                return response.json();
+            });
+        }
+        catch (err) {
+            core.setFailed(err.toString());
+        }
     });
+    return {
+        getPullRequest
+    };
 }
 exports.useGithub = useGithub;
 

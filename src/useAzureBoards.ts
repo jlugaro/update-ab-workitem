@@ -1,11 +1,8 @@
 import * as core from '@actions/core'
 import * as azureDevOpsHandler from 'azure-devops-node-api'
 import {actionEnvModel} from './models/actionEnvModel'
-
-export async function useAzureBoards(
-  env: actionEnvModel,
-  pullRequest: any
-): Promise<any> {
+//env: actionEnvModel, pullRequest: any
+export function useAzureBoards(env: actionEnvModel) {
   const getWorkItemsFromText = (text: string) => {
     try {
       const idList: string[] = []
@@ -34,8 +31,7 @@ export async function useAzureBoards(
     }
   }
 
-  const getWorkItemIdFromBranchName = () => {
-    const branchName = env.branchName
+  const getWorkItemIdFromBranchName = (branchName: string) => {
     try {
       const foundMatches: RegExpMatchArray | null =
         branchName.match(/([0-9]+)/g)
@@ -54,15 +50,18 @@ export async function useAzureBoards(
     }
   }
 
-  const updateWorkItem = async (workItemId: string) => {
+  const updateWorkItem = async (workItemId: string, pullRequest: any) => {
     console.log('Updating work item with work item ID: ' + workItemId)
+
     let authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(
       env.adoPAT
     )
+
     let connection = new azureDevOpsHandler.WebApi(
       `https://dev.azure.com/${env.adoOrganization}`,
       authHandler
     )
+
     let client = await connection.getWorkItemTrackingApi()
     let workItem: any = await client.getWorkItem(<number>(<unknown>workItemId))
 

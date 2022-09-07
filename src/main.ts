@@ -14,10 +14,13 @@ async function run(): Promise<void> {
 
     const vm = getValuesFromPayload(github.context.payload)
 
-    const {pullRequest} = await useGithub(vm)
+    const {getPullRequest} = useGithub()
+
+    const pullRequest = await getPullRequest(vm)
+    console.log(console.log(`Pull Request object: ${pullRequest}`))
 
     const {getWorkItemsFromText, getWorkItemIdFromBranchName, updateWorkItem} =
-      await useAzureBoards(vm, pullRequest)
+      useAzureBoards(vm)
 
     if (process?.env?.GITHUB_EVENT_NAME?.includes('pull_request')) {
       console.log('PR event')
@@ -34,13 +37,13 @@ async function run(): Promise<void> {
         let workItemIds = getWorkItemsFromText(pullRequest.title)
 
         if (workItemIds == null || workItemIds.length == 0) {
-          workItemIds = await getWorkItemsFromText(pullRequest.body)
+          workItemIds = getWorkItemsFromText(pullRequest.body)
         }
 
-        if (workItemIds !== null && workItemIds.length > 0) {
+        if (workItemIds != null && workItemIds.length > 0) {
           workItemIds.forEach(async (workItemId: string) => {
             console.log(`Update work item: ${workItemId}`)
-            await updateWorkItem(workItemId)
+            await updateWorkItem(workItemId, pullRequest)
           })
         } else {
           console.log(`No work items found to update.`)
@@ -59,8 +62,10 @@ async function run(): Promise<void> {
         return
       }
 
-      var workItemId = await getWorkItemIdFromBranchName()
-      await updateWorkItem(workItemId)
+      var workItemId = getWorkItemIdFromBranchName(vm.branchName)
+      if (workItemId != null) {
+        await updateWorkItem(workItemId, pullRequest)
+      }
     }
     console.log('Work item ' + workItemId + ' was updated successfully')
   } catch (err: any) {
