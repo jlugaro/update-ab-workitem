@@ -90,6 +90,11 @@ function useAzureBoards(env) {
         }
         return workItemIds;
     };
+    const getWorkItemIdsFromContext = (context) => {
+        var _a, _b;
+        const workItemIds = getWorkItemsFromText((_b = (_a = context === null || context === void 0 ? void 0 : context.payload) === null || _a === void 0 ? void 0 : _a.head_commit) === null || _b === void 0 ? void 0 : _b.message);
+        return workItemIds;
+    };
     const getApiClient = () => __awaiter(this, void 0, void 0, function* () {
         const authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(env.adoPAT);
         const connection = new azureDevOpsHandler.WebApi(`https://dev.azure.com/${env.adoOrganization}`, authHandler);
@@ -172,6 +177,35 @@ function useAzureBoards(env) {
             console.log(`Work item not found for the provided id: ${workItemId}`);
         }
     });
+    const updateWorkItemByPushEvent = (workItemId, context) => __awaiter(this, void 0, void 0, function* () {
+        console.log('Updating work item: ' + workItemId);
+        const client = yield getApiClient();
+        const workItem = yield client.getWorkItem(workItemId);
+        if (workItem) {
+            console.log('Work Item Type: ' + workItem.fields['System.WorkItemType']);
+            // if (workItem.fields['System.State'] == env.closedMainState) {
+            //   console.log('WorkItem is already closed and cannot be updated.')
+            //   return
+            // } else if (
+            //   workItem.fields['System.State'] == env.openMainState &&
+            //   pullRequest.status != '204'
+            // ) {
+            //   console.log(
+            //     'WorkItem is already in a state of PR open, will not update.'
+            //   )
+            //   return
+            // } else
+            if (context.ref.includes('main')) {
+                handleClosedMainPr(workItemId);
+            }
+            else if (context.ref.includes('pre-release')) {
+                handleClosedStagingPr(workItemId);
+            }
+        }
+        else {
+            console.log(`Work item not found for the provided id: ${workItemId}`);
+        }
+    });
     const setWorkItemState = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
         const client = yield getApiClient();
         const patchDocument = [
@@ -211,6 +245,8 @@ function useAzureBoards(env) {
         getWorkItemIdsFromPullRequest,
         getWorkItemsFromText,
         getWorkItemIdFromBranchName,
+        getWorkItemIdsFromContext,
+        updateWorkItemByPushEvent,
         updateWorkItem
     };
 }
@@ -383,7 +419,7 @@ function run() {
         const vm = getValuesFromPayload(github.context.payload);
         const { isPullRequest, isBotEvent, isProtectedBranch } = (0, useValidators_1.useValidators)(vm);
         const { getPullRequest } = (0, useGithub_1.useGithub)(vm);
-        const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
+        const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, getWorkItemIdsFromContext, updateWorkItemByPushEvent, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
         try {
             const pullRequest = yield getPullRequest();
             console.log(`GitHub event name: ${vm.githubEventName}`);
@@ -422,6 +458,14 @@ function run() {
                 var workItemId = getWorkItemIdFromBranchName(vm.branchName);
                 if (workItemId != null) {
                     yield updateWorkItem(workItemId, pullRequest);
+                }
+                else {
+                    const workItemIds = getWorkItemIdsFromContext(github.context);
+                    if (workItemIds != null && workItemIds.length) {
+                        workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
+                            yield updateWorkItemByPushEvent(workItemId, github.context);
+                        }));
+                    }
                 }
             }
         }

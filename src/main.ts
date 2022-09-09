@@ -21,6 +21,8 @@ async function run(): Promise<void> {
   const {
     getWorkItemIdsFromPullRequest,
     getWorkItemIdFromBranchName,
+    getWorkItemIdsFromContext,
+    updateWorkItemByPushEvent,
     updateWorkItem
   } = useAzureBoards(vm)
 
@@ -70,8 +72,16 @@ async function run(): Promise<void> {
       // }
 
       var workItemId = getWorkItemIdFromBranchName(vm.branchName)
+
       if (workItemId != null) {
         await updateWorkItem(workItemId, pullRequest)
+      } else {
+        const workItemIds = getWorkItemIdsFromContext(github.context)
+        if (workItemIds != null && workItemIds.length) {
+          workItemIds.forEach(async (workItemId: string) => {
+            await updateWorkItemByPushEvent(workItemId, github.context)
+          })
+        }
       }
     }
   } catch (err: any) {

@@ -54,6 +54,13 @@ export function useAzureBoards(env: actionEnvModel) {
     return workItemIds
   }
 
+  const getWorkItemIdsFromContext = (context: any) => {
+    const workItemIds = getWorkItemsFromText(
+      context?.payload?.head_commit?.message
+    )
+    return workItemIds
+  }
+
   const getApiClient = async () => {
     const authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(
       env.adoPAT
@@ -166,6 +173,44 @@ export function useAzureBoards(env: actionEnvModel) {
     }
   }
 
+  const updateWorkItemByPushEvent = async (
+    workItemId: string,
+    context: any
+  ) => {
+    console.log('Updating work item: ' + workItemId)
+
+    const client = await getApiClient()
+
+    const workItem: any = await client.getWorkItem(
+      <number>(<unknown>workItemId)
+    )
+
+    if (workItem) {
+      console.log('Work Item Type: ' + workItem.fields['System.WorkItemType'])
+
+      // if (workItem.fields['System.State'] == env.closedMainState) {
+      //   console.log('WorkItem is already closed and cannot be updated.')
+      //   return
+      // } else if (
+      //   workItem.fields['System.State'] == env.openMainState &&
+      //   pullRequest.status != '204'
+      // ) {
+      //   console.log(
+      //     'WorkItem is already in a state of PR open, will not update.'
+      //   )
+      //   return
+      // } else
+
+      if (context.ref.includes('main')) {
+        handleClosedMainPr(workItemId)
+      } else if (context.ref.includes('pre-release')) {
+        handleClosedStagingPr(workItemId)
+      }
+    } else {
+      console.log(`Work item not found for the provided id: ${workItemId}`)
+    }
+  }
+
   const setWorkItemState = async (workItemId: string, state: string) => {
     const client = await getApiClient()
 
@@ -222,6 +267,8 @@ export function useAzureBoards(env: actionEnvModel) {
     getWorkItemIdsFromPullRequest,
     getWorkItemsFromText,
     getWorkItemIdFromBranchName,
+    getWorkItemIdsFromContext,
+    updateWorkItemByPushEvent,
     updateWorkItem
   }
 }
