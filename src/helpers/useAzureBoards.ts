@@ -145,7 +145,7 @@ export function useAzureBoards(env: actionEnvModel) {
               env.closedStagingState
           )
           await handleClosedStagingPr(workItemId)
-        } else if (targetBranch == 'main' && pullRequest.state == 'closed') {
+        } else if (targetBranch == 'main' && pullRequest.state == 'push') {
           console.log(
             'Event: Pull Request was opened, moving to: ' +
               env.closedStagingState
