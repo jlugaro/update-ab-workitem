@@ -114,11 +114,19 @@ function useAzureBoards(env) {
                 console.log('Product backlog item is not going to be automatically updated - needs to be updated manually.');
             }
             else {
+                const targetBranch = pullRequest.base.ref;
+                console.log(`Target branch: ${targetBranch}`);
                 if (pullRequest.status == '204') {
                     console.log('Event: Pull Request was merged');
                     yield handleMergedPr(workItemId);
                 }
-                else if (pullRequest.state == 'open') {
+                else if (targetBranch == 'Development' &&
+                    pullRequest.state == 'open') {
+                    console.log('Event: Pull Request was opened, moving to: ' + env.openDevState);
+                    yield handleOpenedDevPr(workItemId);
+                }
+                else if (targetBranch != 'Development' &&
+                    pullRequest.state == 'open') {
                     console.log('Event: Pull Request was opened, moving to: ' + env.openState);
                     yield handleOpenedPr(workItemId);
                 }
@@ -152,6 +160,9 @@ function useAzureBoards(env) {
     });
     const handleOpenedPr = (workItemId) => __awaiter(this, void 0, void 0, function* () {
         yield setWorkItemState(workItemId, env.openState);
+    });
+    const handleOpenedDevPr = (workItemId) => __awaiter(this, void 0, void 0, function* () {
+        yield setWorkItemState(workItemId, env.openDevState);
     });
     const handleClosedPr = (workItemId) => __awaiter(this, void 0, void 0, function* () {
         yield setWorkItemState(workItemId, env.inProgressState);
@@ -382,7 +393,7 @@ function run() {
     });
 }
 function getValuesFromPayload(payload) {
-    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, process.env.branch_name, process.env.closedstate, process.env.propenstate, process.env.inprogressstate);
+    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, process.env.branch_name, process.env.pr_open_state, process.env.pr_open_dev_state, process.env.inprogress_state, process.env.closed_state);
 }
 run();
 
@@ -397,7 +408,7 @@ run();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.actionEnvModel = void 0;
 class actionEnvModel {
-    constructor(action, githubEventName, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, branchName, closedState, openState, inProgressState) {
+    constructor(action, githubEventName, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, branchName, openState, openDevState, inProgressState, closedState) {
         this.action = action !== null && action !== void 0 ? action : '';
         this.githubEventName = githubEventName !== null && githubEventName !== void 0 ? githubEventName : '';
         this.githubPAT = githubPAT !== null && githubPAT !== void 0 ? githubPAT : '';
@@ -409,9 +420,10 @@ class actionEnvModel {
         this.repoName = repoName !== null && repoName !== void 0 ? repoName : '';
         this.pullRequestNumber = pullRequestNumber !== null && pullRequestNumber !== void 0 ? pullRequestNumber : '';
         this.branchName = branchName !== null && branchName !== void 0 ? branchName : '';
-        this.closedState = closedState !== null && closedState !== void 0 ? closedState : '';
         this.openState = openState !== null && openState !== void 0 ? openState : '';
+        this.openDevState = openDevState !== null && openDevState !== void 0 ? openDevState : '';
         this.inProgressState = inProgressState !== null && inProgressState !== void 0 ? inProgressState : '';
+        this.closedState = closedState !== null && closedState !== void 0 ? closedState : '';
     }
 }
 exports.actionEnvModel = actionEnvModel;

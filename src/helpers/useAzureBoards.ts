@@ -97,10 +97,24 @@ export function useAzureBoards(env: actionEnvModel) {
           'Product backlog item is not going to be automatically updated - needs to be updated manually.'
         )
       } else {
+        const targetBranch = pullRequest.base.ref
+        console.log(`Target branch: ${targetBranch}`)
+
         if (pullRequest.status == '204') {
           console.log('Event: Pull Request was merged')
           await handleMergedPr(workItemId)
-        } else if (pullRequest.state == 'open') {
+        } else if (
+          targetBranch == 'Development' &&
+          pullRequest.state == 'open'
+        ) {
+          console.log(
+            'Event: Pull Request was opened, moving to: ' + env.openDevState
+          )
+          await handleOpenedDevPr(workItemId)
+        } else if (
+          targetBranch != 'Development' &&
+          pullRequest.state == 'open'
+        ) {
           console.log(
             'Event: Pull Request was opened, moving to: ' + env.openState
           )
@@ -148,6 +162,10 @@ export function useAzureBoards(env: actionEnvModel) {
 
   const handleOpenedPr = async (workItemId: string) => {
     await setWorkItemState(workItemId, env.openState)
+  }
+
+  const handleOpenedDevPr = async (workItemId: string) => {
+    await setWorkItemState(workItemId, env.openDevState)
   }
 
   const handleClosedPr = async (workItemId: string) => {
