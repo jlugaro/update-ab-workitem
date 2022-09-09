@@ -196,9 +196,11 @@ function useAzureBoards(env) {
             //   return
             // } else
             if (context.ref.includes('main')) {
+                console.log('Updating by context: main');
                 handleClosedMainPr(workItemId);
             }
             else if (context.ref.includes('pre-release')) {
+                console.log('Updating by context: pre-release');
                 handleClosedStagingPr(workItemId);
             }
         }
@@ -475,7 +477,7 @@ function run() {
     });
 }
 function getValuesFromPayload(payload) {
-    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, process.env.branch_name, process.env.inprogress_state, process.env.pr_open_dev_state, process.env.pr_closed_dev_state, process.env.pr_open_staging_state, process.env.pr_closed_staging_state, process.env.pr_open_main_state, process.env.closed_main_state);
+    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, process.env.branch_name, process.env.inprogress_state, process.env.pr_open_dev_state, process.env.pr_closed_dev_state, process.env.pr_open_staging_state, process.env.pr_closed_staging_state, process.env.pr_open_main_state, process.env.pr_closed_main_state);
 }
 run();
 

@@ -202,8 +202,10 @@ export function useAzureBoards(env: actionEnvModel) {
       // } else
 
       if (context.ref.includes('main')) {
+        console.log('Updating by context: main')
         handleClosedMainPr(workItemId)
       } else if (context.ref.includes('pre-release')) {
+        console.log('Updating by context: pre-release')
         handleClosedStagingPr(workItemId)
       }
     } else {

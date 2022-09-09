@@ -108,7 +108,7 @@ function getValuesFromPayload(payload: any) {
     process.env.pr_open_staging_state,
     process.env.pr_closed_staging_state,
     process.env.pr_open_main_state,
-    process.env.closed_main_state
+    process.env.pr_closed_main_state
   )
 }
 
