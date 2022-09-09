@@ -147,6 +147,12 @@ function useAzureBoards(env) {
                     console.log('Event: Pull Request was opened, moving to: ' + env.openStagingState);
                     yield handleOpenedStagingPr(workItemId);
                 }
+                else if (targetBranch == 'Pre-Release' &&
+                    pullRequest.state == 'closed') {
+                    console.log('Event: Pull Request was closed, moving to: ' +
+                        env.closedStagingState);
+                    yield handleClosedStagingPr(workItemId);
+                }
                 else if (targetBranch == 'main' && pullRequest.state == 'push') {
                     console.log('Event: Pull Request was opened, moving to: ' +
                         env.closedStagingState);
