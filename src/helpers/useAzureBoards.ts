@@ -79,20 +79,20 @@ export function useAzureBoards(env: actionEnvModel) {
     if (workItem) {
       console.log('Work Item Type: ' + workItem.fields['System.WorkItemType'])
 
-      if (workItem.fields['System.State'] == env.closedMainState) {
-        console.log('WorkItem is already closed and cannot be updated.')
-        return
-      } else if (
-        workItem.fields['System.State'] == env.openMainState &&
-        pullRequest.status != '204'
-      ) {
-        console.log(
-          'WorkItem is already in a state of PR open, will not update.'
-        )
-        return
-      } else if (
-        workItem.fields['System.WorkItemType'] == 'Product Backlog Item'
-      ) {
+      // if (workItem.fields['System.State'] == env.closedMainState) {
+      //   console.log('WorkItem is already closed and cannot be updated.')
+      //   return
+      // } else if (
+      //   workItem.fields['System.State'] == env.openMainState &&
+      //   pullRequest.status != '204'
+      // ) {
+      //   console.log(
+      //     'WorkItem is already in a state of PR open, will not update.'
+      //   )
+      //   return
+      // } else
+
+      if (workItem.fields['System.WorkItemType'] == 'Product Backlog Item') {
         console.log(
           'Product backlog item is not going to be automatically updated - needs to be updated manually.'
         )
