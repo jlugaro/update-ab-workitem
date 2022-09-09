@@ -113,7 +113,7 @@ export function useAzureBoards(env: actionEnvModel) {
           )
           await handleOpenedDevPr(workItemId)
         } else if (
-          targetBranch == 'pre-release' &&
+          targetBranch == 'Pre-Release' &&
           pullRequest.state == 'push'
         ) {
           console.log(
@@ -122,7 +122,7 @@ export function useAzureBoards(env: actionEnvModel) {
           await handleClosedDevPr(workItemId)
         } else if (
           //Staging Branch
-          targetBranch == 'pre-release' &&
+          targetBranch == 'Pre-Release' &&
           pullRequest.state == 'open'
         ) {
           console.log(

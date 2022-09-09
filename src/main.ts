@@ -64,10 +64,10 @@ async function run(): Promise<void> {
     } else {
       console.log('Branch event')
 
-      if (isProtectedBranch()) {
-        console.log('Automation will not handle commits pushed to master')
-        return
-      }
+      // if (isProtectedBranch()) {
+      //   console.log('Automation will not handle commits pushed to master')
+      //   return
+      // }
 
       var workItemId = getWorkItemIdFromBranchName(vm.branchName)
       if (workItemId != null) {

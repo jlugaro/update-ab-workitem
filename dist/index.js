@@ -127,14 +127,14 @@ function useAzureBoards(env) {
                     console.log('Event: Pull Request was opened, moving to: ' + env.openDevState);
                     yield handleOpenedDevPr(workItemId);
                 }
-                else if (targetBranch == 'pre-release' &&
+                else if (targetBranch == 'Pre-Release' &&
                     pullRequest.state == 'push') {
                     console.log('Event: Pull Request was opened, moving to: ' + env.closedDevState);
                     yield handleClosedDevPr(workItemId);
                 }
                 else if (
                 //Staging Branch
-                targetBranch == 'pre-release' &&
+                targetBranch == 'Pre-Release' &&
                     pullRequest.state == 'open') {
                     console.log('Event: Pull Request was opened, moving to: ' + env.openStagingState);
                     yield handleOpenedStagingPr(workItemId);
@@ -412,10 +412,10 @@ function run() {
             }
             else {
                 console.log('Branch event');
-                if (isProtectedBranch()) {
-                    console.log('Automation will not handle commits pushed to master');
-                    return;
-                }
+                // if (isProtectedBranch()) {
+                //   console.log('Automation will not handle commits pushed to master')
+                //   return
+                // }
                 var workItemId = getWorkItemIdFromBranchName(vm.branchName);
                 if (workItemId != null) {
                     yield updateWorkItem(workItemId, pullRequest);
