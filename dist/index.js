@@ -90,48 +90,54 @@ function useAzureBoards(env) {
         }
         return workItemIds;
     };
+    const getApiClient = () => __awaiter(this, void 0, void 0, function* () {
+        const authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(env.adoPAT);
+        const connection = new azureDevOpsHandler.WebApi(`https://dev.azure.com/${env.adoOrganization}`, authHandler);
+        return connection.getWorkItemTrackingApi();
+    });
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
         console.log('Updating work item: ' + workItemId);
-        let authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(env.adoPAT);
-        let connection = new azureDevOpsHandler.WebApi(`https://dev.azure.com/${env.adoOrganization}`, authHandler);
-        let client = yield connection.getWorkItemTrackingApi();
-        let workItem = yield client.getWorkItem(workItemId);
-        console.log('Work Item Type: ' + workItem.fields['System.WorkItemType']);
-        if (workItem.fields['System.State'] == env.closedState) {
-            console.log('WorkItem is already closed and cannot be updated.');
-            return;
-        }
-        else if (workItem.fields['System.State'] == env.openState &&
-            pullRequest.status != '204') {
-            console.log('WorkItem is already in a state of PR open, will not update.');
-            return;
-        }
-        else if (workItem.fields['System.WorkItemType'] == 'Product Backlog Item') {
-            console.log('Product backlog item is not going to be automatically updated - needs to be updated manually.');
-        }
-        else {
-            if (pullRequest.status == '204') {
-                console.log('Event: Pull Request was merged');
-                yield handleMergedPr(workItemId);
+        const client = yield getApiClient();
+        const workItem = yield client.getWorkItem(workItemId);
+        if (workItem) {
+            console.log('Work Item Type: ' + workItem.fields['System.WorkItemType']);
+            if (workItem.fields['System.State'] == env.closedState) {
+                console.log('WorkItem is already closed and cannot be updated.');
+                return;
             }
-            else if (pullRequest.state == 'open') {
-                console.log('Event: Pull Request was opened, moving to: ' + env.openState);
-                yield handleOpenedPr(workItemId);
+            else if (workItem.fields['System.State'] == env.openState &&
+                pullRequest.status != '204') {
+                console.log('WorkItem is already in a state of PR open, will not update.');
+                return;
             }
-            else if (pullRequest.state == 'closed') {
-                console.log('Event: Pull Request was closed, moving to: ' + env.inProgressState);
-                yield handleClosedPr(workItemId);
+            else if (workItem.fields['System.WorkItemType'] == 'Product Backlog Item') {
+                console.log('Product backlog item is not going to be automatically updated - needs to be updated manually.');
             }
             else {
-                console.log('Event: Branch was pushed, moving to: ' + env.inProgressState);
-                yield handleOpenBranch(workItemId);
+                if (pullRequest.status == '204') {
+                    console.log('Event: Pull Request was merged');
+                    yield handleMergedPr(workItemId);
+                }
+                else if (pullRequest.state == 'open') {
+                    console.log('Event: Pull Request was opened, moving to: ' + env.openState);
+                    yield handleOpenedPr(workItemId);
+                }
+                else if (pullRequest.state == 'closed') {
+                    console.log('Event: Pull Request was closed, moving to: ' + env.inProgressState);
+                    yield handleClosedPr(workItemId);
+                }
+                else {
+                    console.log('Event: Branch was pushed, moving to: ' + env.inProgressState);
+                    yield handleOpenBranch(workItemId);
+                }
             }
+        }
+        else {
+            console.log(`Work item not found for the provided id: ${workItemId}`);
         }
     });
     const setWorkItemState = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        const authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(env.adoPAT);
-        const connection = new azureDevOpsHandler.WebApi(`https://dev.azure.com/${env.adoOrganization}`, authHandler);
-        const client = yield connection.getWorkItemTrackingApi();
+        const client = yield getApiClient();
         const patchDocument = [
             {
                 op: 'add',
@@ -240,7 +246,7 @@ exports.useGithub = useGithub;
 
 /***/ }),
 
-/***/ 2931:
+/***/ 9218:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -320,14 +326,14 @@ const github = __importStar(__nccwpck_require__(5438));
 const useGithub_1 = __nccwpck_require__(6435);
 const useAzureBoards_1 = __nccwpck_require__(973);
 const actionEnvModel_1 = __nccwpck_require__(1634);
-const validators_1 = __nccwpck_require__(2931);
+const useValidators_1 = __nccwpck_require__(9218);
 const version = '1.0.0';
 global.Headers = fetch.Headers;
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('VERSION ' + version);
         const vm = getValuesFromPayload(github.context.payload);
-        const { isPullRequest, isBotEvent, isProtectedBranch } = (0, validators_1.useValidators)(vm);
+        const { isPullRequest, isBotEvent, isProtectedBranch } = (0, useValidators_1.useValidators)(vm);
         const { getPullRequest } = (0, useGithub_1.useGithub)(vm);
         const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
         try {

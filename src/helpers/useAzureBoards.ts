@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as azureDevOpsHandler from 'azure-devops-node-api'
+import {WorkItem} from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces'
 import {actionEnvModel} from '../models/actionEnvModel'
 
 export function useAzureBoards(env: actionEnvModel) {
@@ -53,62 +54,7 @@ export function useAzureBoards(env: actionEnvModel) {
     return workItemIds
   }
 
-  const updateWorkItem = async (workItemId: string, pullRequest: any) => {
-    console.log('Updating work item: ' + workItemId)
-
-    let authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(
-      env.adoPAT
-    )
-
-    let connection = new azureDevOpsHandler.WebApi(
-      `https://dev.azure.com/${env.adoOrganization}`,
-      authHandler
-    )
-
-    let client = await connection.getWorkItemTrackingApi()
-    let workItem: any = await client.getWorkItem(<number>(<unknown>workItemId))
-
-    console.log('Work Item Type: ' + workItem.fields['System.WorkItemType'])
-
-    if (workItem.fields['System.State'] == env.closedState) {
-      console.log('WorkItem is already closed and cannot be updated.')
-      return
-    } else if (
-      workItem.fields['System.State'] == env.openState &&
-      pullRequest.status != '204'
-    ) {
-      console.log('WorkItem is already in a state of PR open, will not update.')
-      return
-    } else if (
-      workItem.fields['System.WorkItemType'] == 'Product Backlog Item'
-    ) {
-      console.log(
-        'Product backlog item is not going to be automatically updated - needs to be updated manually.'
-      )
-    } else {
-      if (pullRequest.status == '204') {
-        console.log('Event: Pull Request was merged')
-        await handleMergedPr(workItemId)
-      } else if (pullRequest.state == 'open') {
-        console.log(
-          'Event: Pull Request was opened, moving to: ' + env.openState
-        )
-        await handleOpenedPr(workItemId)
-      } else if (pullRequest.state == 'closed') {
-        console.log(
-          'Event: Pull Request was closed, moving to: ' + env.inProgressState
-        )
-        await handleClosedPr(workItemId)
-      } else {
-        console.log(
-          'Event: Branch was pushed, moving to: ' + env.inProgressState
-        )
-        await handleOpenBranch(workItemId)
-      }
-    }
-  }
-
-  const setWorkItemState = async (workItemId: string, state: string) => {
+  const getApiClient = async () => {
     const authHandler = azureDevOpsHandler.getPersonalAccessTokenHandler(
       env.adoPAT
     )
@@ -118,7 +64,66 @@ export function useAzureBoards(env: actionEnvModel) {
       authHandler
     )
 
-    const client = await connection.getWorkItemTrackingApi()
+    return connection.getWorkItemTrackingApi()
+  }
+
+  const updateWorkItem = async (workItemId: string, pullRequest: any) => {
+    console.log('Updating work item: ' + workItemId)
+
+    const client = await getApiClient()
+
+    const workItem: any = await client.getWorkItem(
+      <number>(<unknown>workItemId)
+    )
+
+    if (workItem) {
+      console.log('Work Item Type: ' + workItem.fields['System.WorkItemType'])
+
+      if (workItem.fields['System.State'] == env.closedState) {
+        console.log('WorkItem is already closed and cannot be updated.')
+        return
+      } else if (
+        workItem.fields['System.State'] == env.openState &&
+        pullRequest.status != '204'
+      ) {
+        console.log(
+          'WorkItem is already in a state of PR open, will not update.'
+        )
+        return
+      } else if (
+        workItem.fields['System.WorkItemType'] == 'Product Backlog Item'
+      ) {
+        console.log(
+          'Product backlog item is not going to be automatically updated - needs to be updated manually.'
+        )
+      } else {
+        if (pullRequest.status == '204') {
+          console.log('Event: Pull Request was merged')
+          await handleMergedPr(workItemId)
+        } else if (pullRequest.state == 'open') {
+          console.log(
+            'Event: Pull Request was opened, moving to: ' + env.openState
+          )
+          await handleOpenedPr(workItemId)
+        } else if (pullRequest.state == 'closed') {
+          console.log(
+            'Event: Pull Request was closed, moving to: ' + env.inProgressState
+          )
+          await handleClosedPr(workItemId)
+        } else {
+          console.log(
+            'Event: Branch was pushed, moving to: ' + env.inProgressState
+          )
+          await handleOpenBranch(workItemId)
+        }
+      }
+    } else {
+      console.log(`Work item not found for the provided id: ${workItemId}`)
+    }
+  }
+
+  const setWorkItemState = async (workItemId: string, state: string) => {
+    const client = await getApiClient()
 
     const patchDocument = [
       {

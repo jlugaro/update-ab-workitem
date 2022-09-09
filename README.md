@@ -8,7 +8,7 @@ This is a Typescript rewrite of the original project [CanarysAutomations/pr-upda
 
 The intention of this rewrite is to cleanup the code, extend its current functionalities and implement tests (which are not implemented yet).
 
-All credit goes to [CanarysAutomations](https://github.com/CanarysAutomations/pr-update-work-item-state), [MarcinGadomski94/pr-update-work-item-state](https://github.com/MarcinGadomski94/pr-update-work-item-state) [sigglep/pr-update-work-item-state](https://github.com/sigglep/pr-update-work-item-state).
+All credit goes to [CanarysAutomations](https://github.com/CanarysAutomations/pr-update-work-item-state), [MarcinGadomski94](https://github.com/MarcinGadomski94/pr-update-work-item-state), and [sigglep](https://github.com/sigglep/pr-update-work-item-state).
 
 ## Project Setup
 

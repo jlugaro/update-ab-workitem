@@ -4,7 +4,7 @@ import * as github from '@actions/github'
 import {useGithub} from './helpers/useGithub'
 import {useAzureBoards} from './helpers/useAzureBoards'
 import {actionEnvModel} from './models/actionEnvModel'
-import {useValidators} from './helpers/validators'
+import {useValidators} from './helpers/useValidators'
 
 const version = '1.0.0'
 global.Headers = fetch.Headers
