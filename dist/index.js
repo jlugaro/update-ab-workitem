@@ -339,6 +339,7 @@ function run() {
         try {
             const pullRequest = yield getPullRequest();
             console.log(`GitHub event name: ${vm.githubEventName}`);
+            console.log(pullRequest);
             console.log(`Pull Request title: ${pullRequest.title}`);
             console.log(`Pull Request body: ${pullRequest.body}`);
             if (isPullRequest()) {
