@@ -163,10 +163,6 @@ function useAzureBoards(env) {
                     console.log('Event: Pull Request was opened, moving to: ' + env.closedMainState);
                     yield handleClosedMainPr(workItemId);
                 }
-                else {
-                    console.log('Event: Branch was pushed, moving to: ' + env.inProgressState);
-                    yield handleOpenBranch(workItemId);
-                }
             }
         }
         else {

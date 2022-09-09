@@ -156,11 +156,6 @@ export function useAzureBoards(env: actionEnvModel) {
             'Event: Pull Request was opened, moving to: ' + env.closedMainState
           )
           await handleClosedMainPr(workItemId)
-        } else {
-          console.log(
-            'Event: Branch was pushed, moving to: ' + env.inProgressState
-          )
-          await handleOpenBranch(workItemId)
         }
       }
     } else {
