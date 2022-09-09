@@ -29,6 +29,8 @@ async function run(): Promise<void> {
 
     console.log(`GitHub event name: ${vm.githubEventName}`)
 
+    console.log(github.context)
+
     console.log(pullRequest)
 
     console.log(`Pull Request title: ${pullRequest.title}`)
