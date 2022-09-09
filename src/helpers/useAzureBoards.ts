@@ -104,7 +104,7 @@ export function useAzureBoards(env: actionEnvModel) {
           console.log('Event: Pull Request was merged')
           await handleMergedPr(workItemId)
         } else if (
-          targetBranch == 'Development' &&
+          targetBranch == 'development' &&
           pullRequest.state == 'open'
         ) {
           console.log(
@@ -112,7 +112,7 @@ export function useAzureBoards(env: actionEnvModel) {
           )
           await handleOpenedDevPr(workItemId)
         } else if (
-          targetBranch != 'Development' &&
+          targetBranch != 'development' &&
           pullRequest.state == 'open'
         ) {
           console.log(

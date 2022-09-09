@@ -120,12 +120,12 @@ function useAzureBoards(env) {
                     console.log('Event: Pull Request was merged');
                     yield handleMergedPr(workItemId);
                 }
-                else if (targetBranch == 'Development' &&
+                else if (targetBranch == 'development' &&
                     pullRequest.state == 'open') {
                     console.log('Event: Pull Request was opened, moving to: ' + env.openDevState);
                     yield handleOpenedDevPr(workItemId);
                 }
-                else if (targetBranch != 'Development' &&
+                else if (targetBranch != 'development' &&
                     pullRequest.state == 'open') {
                     console.log('Event: Pull Request was opened, moving to: ' + env.openState);
                     yield handleOpenedPr(workItemId);
