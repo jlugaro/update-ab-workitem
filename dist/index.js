@@ -153,7 +153,7 @@ function useAzureBoards(env) {
                         env.closedStagingState);
                     yield handleClosedStagingPr(workItemId);
                 }
-                else if (targetBranch == 'main' && pullRequest.state == 'push') {
+                else if (targetBranch == 'main' && pullRequest.state == 'closed') {
                     console.log('Event: Pull Request was opened, moving to: ' +
                         env.closedStagingState);
                     yield handleClosedStagingPr(workItemId);
