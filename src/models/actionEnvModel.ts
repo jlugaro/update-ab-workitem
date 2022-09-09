@@ -10,10 +10,13 @@ export class actionEnvModel {
   repoName: string
   pullRequestNumber: string
   branchName: string
-  openState: string
-  openDevState: string
   inProgressState: string
-  closedState: string
+  openDevState: string
+  closedDevState: string
+  openStagingState: string
+  closedStagingState: string
+  openMainState: string
+  closedMainState: string
 
   constructor(
     action: string | undefined,
@@ -27,10 +30,13 @@ export class actionEnvModel {
     repoName: string | undefined,
     pullRequestNumber: string | undefined,
     branchName: string | undefined,
-    openState: string | undefined,
-    openDevState: string | undefined,
     inProgressState: string | undefined,
-    closedState: string | undefined
+    openDevState: string | undefined,
+    closedDevState: string | undefined,
+    openStagingState: string | undefined,
+    closedStagingState: string | undefined,
+    openMainState: string | undefined,
+    closedMainState: string | undefined
   ) {
     this.action = action ?? ''
     this.githubEventName = githubEventName ?? ''
@@ -43,9 +49,12 @@ export class actionEnvModel {
     this.repoName = repoName ?? ''
     this.pullRequestNumber = pullRequestNumber ?? ''
     this.branchName = branchName ?? ''
-    this.openState = openState ?? ''
-    this.openDevState = openDevState ?? ''
     this.inProgressState = inProgressState ?? ''
-    this.closedState = closedState ?? ''
+    this.openDevState = openDevState ?? ''
+    this.closedDevState = closedDevState ?? ''
+    this.openStagingState = openStagingState ?? ''
+    this.closedStagingState = closedStagingState ?? ''
+    this.openMainState = openMainState ?? ''
+    this.closedMainState = closedMainState ?? ''
   }
 }

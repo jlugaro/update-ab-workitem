@@ -79,11 +79,11 @@ export function useAzureBoards(env: actionEnvModel) {
     if (workItem) {
       console.log('Work Item Type: ' + workItem.fields['System.WorkItemType'])
 
-      if (workItem.fields['System.State'] == env.closedState) {
+      if (workItem.fields['System.State'] == env.closedMainState) {
         console.log('WorkItem is already closed and cannot be updated.')
         return
       } else if (
-        workItem.fields['System.State'] == env.openState &&
+        workItem.fields['System.State'] == env.openMainState &&
         pullRequest.status != '204'
       ) {
         console.log(
@@ -104,6 +104,7 @@ export function useAzureBoards(env: actionEnvModel) {
           console.log('Event: Pull Request was merged')
           await handleMergedPr(workItemId)
         } else if (
+          //Development Branch
           targetBranch == 'development' &&
           pullRequest.state == 'open'
         ) {
@@ -112,18 +113,47 @@ export function useAzureBoards(env: actionEnvModel) {
           )
           await handleOpenedDevPr(workItemId)
         } else if (
-          targetBranch != 'development' &&
+          targetBranch == 'pre-release' &&
+          pullRequest.state == 'push'
+        ) {
+          console.log(
+            'Event: Pull Request was opened, moving to: ' + env.closedDevState
+          )
+          await handleClosedDevPr(workItemId)
+        } else if (
+          //Staging Branch
+          targetBranch == 'pre-release' &&
           pullRequest.state == 'open'
         ) {
           console.log(
-            'Event: Pull Request was opened, moving to: ' + env.openState
+            'Event: Pull Request was opened, moving to: ' + env.openStagingState
           )
-          await handleOpenedPr(workItemId)
+          await handleOpenedStagingPr(workItemId)
+        } else if (targetBranch == 'main' && pullRequest.state == 'push') {
+          console.log(
+            'Event: Pull Request was opened, moving to: ' +
+              env.closedStagingState
+          )
+          await handleClosedStagingPr(workItemId)
+        } else if (
+          //Main Branch
+          targetBranch == 'main' &&
+          pullRequest.state == 'open'
+        ) {
+          console.log(
+            'Event: Pull Request was opened, moving to: ' + env.openMainState
+          )
+          await handleOpenedMainPr(workItemId)
+        } else if (targetBranch == 'main' && pullRequest.state == 'push') {
+          console.log(
+            'Event: Pull Request was opened, moving to: ' + env.closedMainState
+          )
+          await handleClosedMainPr(workItemId)
         } else if (pullRequest.state == 'closed') {
           console.log(
-            'Event: Pull Request was closed, moving to: ' + env.inProgressState
+            'Event: Pull Request was closed, moving to: ' + env.closedMainState
           )
-          await handleClosedPr(workItemId)
+          await handleClosedMainPr(workItemId)
         } else {
           console.log(
             'Event: Branch was pushed, moving to: ' + env.inProgressState
@@ -157,19 +187,31 @@ export function useAzureBoards(env: actionEnvModel) {
   }
 
   const handleMergedPr = async (workItemId: string) => {
-    await setWorkItemState(workItemId, env.closedState)
-  }
-
-  const handleOpenedPr = async (workItemId: string) => {
-    await setWorkItemState(workItemId, env.openState)
+    await setWorkItemState(workItemId, env.closedMainState)
   }
 
   const handleOpenedDevPr = async (workItemId: string) => {
     await setWorkItemState(workItemId, env.openDevState)
   }
 
-  const handleClosedPr = async (workItemId: string) => {
+  const handleClosedDevPr = async (workItemId: string) => {
     await setWorkItemState(workItemId, env.inProgressState)
+  }
+
+  const handleOpenedStagingPr = async (workItemId: string) => {
+    await setWorkItemState(workItemId, env.openStagingState)
+  }
+
+  const handleClosedStagingPr = async (workItemId: string) => {
+    await setWorkItemState(workItemId, env.closedStagingState)
+  }
+
+  const handleOpenedMainPr = async (workItemId: string) => {
+    await setWorkItemState(workItemId, env.openMainState)
+  }
+
+  const handleClosedMainPr = async (workItemId: string) => {
+    await setWorkItemState(workItemId, env.closedMainState)
   }
 
   const handleOpenBranch = async (workItemId: string) => {

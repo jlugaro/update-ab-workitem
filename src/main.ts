@@ -90,10 +90,13 @@ function getValuesFromPayload(payload: any) {
     process.env.gh_repo,
     process.env.pull_number,
     process.env.branch_name,
-    process.env.pr_open_state,
-    process.env.pr_open_dev_state,
     process.env.inprogress_state,
-    process.env.closed_state
+    process.env.pr_open_dev_state,
+    process.env.pr_closed_dev_state,
+    process.env.pr_open_staging_state,
+    process.env.pr_closed_staging_state,
+    process.env.pr_open_main_state,
+    process.env.closed_main_state
   )
 }
 
