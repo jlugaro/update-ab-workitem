@@ -14,7 +14,13 @@ async function run(): Promise<void> {
 
   const vm = getValuesFromPayload(github.context.payload)
 
-  const {isPullRequest, isBotEvent, isProtectedBranch} = useValidators(vm)
+  const {
+    isPullRequestEvent,
+    isBranchEvent,
+    isReviewEvent,
+    isBotEvent,
+    isProtectedBranch
+  } = useValidators(vm)
 
   const {getPullRequest} = useGithub(vm)
 
@@ -39,7 +45,7 @@ async function run(): Promise<void> {
 
     console.log(`Pull Request body: ${pullRequest.body}`)
 
-    if (isPullRequest()) {
+    if (isPullRequestEvent()) {
       if (isBotEvent(pullRequest)) {
         console.log('Bot branches are not to be processed')
         return
@@ -63,7 +69,7 @@ async function run(): Promise<void> {
         )
         core.setFailed(err.toString())
       }
-    } else {
+    } else if (isBranchEvent()) {
       console.log('Branch event')
 
       // if (isProtectedBranch()) {
@@ -83,6 +89,9 @@ async function run(): Promise<void> {
           })
         }
       }
+    } else if (isReviewEvent()) {
+      console.log('Pull request review event')
+      console.log(github.context)
     }
   } catch (err: any) {
     core.setFailed(err.toString())

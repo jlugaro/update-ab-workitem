@@ -86,6 +86,20 @@ export function useAzureBoards(env: actionEnvModel) {
     if (workItem) {
       console.log('Work Item Type: ' + workItem.fields['System.WorkItemType'])
 
+      switch (env.githubEventName) {
+        case 'pull_request':
+          console.log('updateWorkItem: Is pull_request')
+          break
+        case 'pull_request_review':
+          console.log('updateWorkItem: Is pull_request_review')
+          break
+        case 'push':
+          console.log('updateWorkItem: Is branch push')
+          break
+        default:
+          break
+      }
+
       // if (workItem.fields['System.State'] == env.closedMainState) {
       //   console.log('WorkItem is already closed and cannot be updated.')
       //   return

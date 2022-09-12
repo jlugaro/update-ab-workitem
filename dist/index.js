@@ -106,6 +106,19 @@ function useAzureBoards(env) {
         const workItem = yield client.getWorkItem(workItemId);
         if (workItem) {
             console.log('Work Item Type: ' + workItem.fields['System.WorkItemType']);
+            switch (env.githubEventName) {
+                case 'pull_request':
+                    console.log('updateWorkItem: Is pull_request');
+                    break;
+                case 'pull_request_review':
+                    console.log('updateWorkItem: Is pull_request_review');
+                    break;
+                case 'push':
+                    console.log('updateWorkItem: Is branch push');
+                    break;
+                default:
+                    break;
+            }
             // if (workItem.fields['System.State'] == env.closedMainState) {
             //   console.log('WorkItem is already closed and cannot be updated.')
             //   return
@@ -338,13 +351,17 @@ exports.useGithub = useGithub;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.useValidators = void 0;
 function useValidators(env) {
-    const isPullRequest = () => {
+    const isPullRequestEvent = () => {
         var _a;
         return (_a = env.githubEventName) === null || _a === void 0 ? void 0 : _a.includes('pull_request');
     };
     const isBranchEvent = () => {
         var _a;
         return (_a = env.githubEventName) === null || _a === void 0 ? void 0 : _a.includes('push');
+    };
+    const isReviewEvent = () => {
+        var _a;
+        return (_a = env.githubEventName) === null || _a === void 0 ? void 0 : _a.includes('pull_request_review');
     };
     const isBotEvent = (pullRequest) => {
         return (pullRequest.title != null &&
@@ -355,8 +372,9 @@ function useValidators(env) {
         return env.branchName.includes('master') || env.branchName.includes('main');
     };
     return {
-        isPullRequest,
+        isPullRequestEvent,
         isBranchEvent,
+        isReviewEvent,
         isBotEvent,
         isProtectedBranch
     };
@@ -417,7 +435,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('VERSION ' + version);
         const vm = getValuesFromPayload(github.context.payload);
-        const { isPullRequest, isBotEvent, isProtectedBranch } = (0, useValidators_1.useValidators)(vm);
+        const { isPullRequestEvent, isBranchEvent, isReviewEvent, isBotEvent, isProtectedBranch } = (0, useValidators_1.useValidators)(vm);
         const { getPullRequest } = (0, useGithub_1.useGithub)(vm);
         const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, getWorkItemIdsFromContext, updateWorkItemByPushEvent, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
         try {
@@ -427,7 +445,7 @@ function run() {
             console.log(pullRequest);
             console.log(`Pull Request title: ${pullRequest.title}`);
             console.log(`Pull Request body: ${pullRequest.body}`);
-            if (isPullRequest()) {
+            if (isPullRequestEvent()) {
                 if (isBotEvent(pullRequest)) {
                     console.log('Bot branches are not to be processed');
                     return;
@@ -449,7 +467,7 @@ function run() {
                     core.setFailed(err.toString());
                 }
             }
-            else {
+            else if (isBranchEvent()) {
                 console.log('Branch event');
                 // if (isProtectedBranch()) {
                 //   console.log('Automation will not handle commits pushed to master')
@@ -467,6 +485,10 @@ function run() {
                         }));
                     }
                 }
+            }
+            else if (isReviewEvent()) {
+                console.log('Pull request review event');
+                console.log(github.context);
             }
         }
         catch (err) {

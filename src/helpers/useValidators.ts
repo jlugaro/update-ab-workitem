@@ -1,12 +1,16 @@
 import {actionEnvModel} from '../models/actionEnvModel'
 
 export function useValidators(env: actionEnvModel) {
-  const isPullRequest = () => {
+  const isPullRequestEvent = () => {
     return env.githubEventName?.includes('pull_request')
   }
 
   const isBranchEvent = () => {
     return env.githubEventName?.includes('push')
+  }
+
+  const isReviewEvent = () => {
+    return env.githubEventName?.includes('pull_request_review')
   }
 
   const isBotEvent = (pullRequest: any) => {
@@ -22,8 +26,9 @@ export function useValidators(env: actionEnvModel) {
   }
 
   return {
-    isPullRequest,
+    isPullRequestEvent,
     isBranchEvent,
+    isReviewEvent,
     isBotEvent,
     isProtectedBranch
   }
