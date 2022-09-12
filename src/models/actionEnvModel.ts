@@ -10,6 +10,9 @@ export class actionEnvModel {
   repoName: string
   pullRequestNumber: string
   branchName: string
+  devBranchName: string
+  stagingBranchName: string
+  mainBranchName: string
   inProgressState: string
   openDevState: string
   closedDevState: string
@@ -30,6 +33,9 @@ export class actionEnvModel {
     repoName: string | undefined,
     pullRequestNumber: string | undefined,
     branchName: string | undefined,
+    devBranchName: string | undefined,
+    stagingBranchName: string | undefined,
+    mainBranchName: string | undefined,
     inProgressState: string | undefined,
     openDevState: string | undefined,
     closedDevState: string | undefined,
@@ -49,6 +55,9 @@ export class actionEnvModel {
     this.repoName = repoName ?? ''
     this.pullRequestNumber = pullRequestNumber ?? ''
     this.branchName = branchName ?? ''
+    this.devBranchName = devBranchName ?? ''
+    this.stagingBranchName = stagingBranchName ?? ''
+    this.mainBranchName = mainBranchName ?? ''
     this.inProgressState = inProgressState ?? ''
     this.openDevState = openDevState ?? ''
     this.closedDevState = closedDevState ?? ''

@@ -85,10 +85,21 @@ export function useAzureBoards(env: actionEnvModel) {
 
     if (workItem) {
       console.log('Work Item Type: ' + workItem.fields['System.WorkItemType'])
-
+      const targetBranch = pullRequest.base.ref
       switch (env.githubEventName) {
         case 'pull_request':
-          console.log('updateWorkItem: Is pull_request')
+          console.log(`updateWorkItem: Is pull_request into ${targetBranch}`)
+
+          switch (targetBranch) {
+            case env.devBranchName:
+              break
+            case env.stagingBranchName:
+              break
+            case env.mainBranchName:
+              break
+            default:
+              break
+          }
           break
         case 'pull_request_review':
           console.log('updateWorkItem: Is pull_request_review')
@@ -118,7 +129,6 @@ export function useAzureBoards(env: actionEnvModel) {
           'Product backlog item is not going to be automatically updated - needs to be updated manually.'
         )
       } else {
-        const targetBranch = pullRequest.base.ref
         console.log(`Target branch: ${targetBranch}`)
 
         if (pullRequest.status == '204') {

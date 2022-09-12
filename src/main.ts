@@ -39,17 +39,17 @@ async function run(): Promise<void> {
 
     console.log(github.context)
 
-    console.log(pullRequest)
-
-    console.log(`Pull Request title: ${pullRequest.title}`)
-
-    console.log(`Pull Request body: ${pullRequest.body}`)
-
     if (isPullRequestEvent()) {
       if (isBotEvent(pullRequest)) {
         console.log('Bot branches are not to be processed')
         return
       }
+
+      console.log(pullRequest)
+
+      console.log(`Pull Request title: ${pullRequest.title}`)
+
+      console.log(`Pull Request body: ${pullRequest.body}`)
 
       try {
         let workItemIds = getWorkItemIdsFromPullRequest(pullRequest)
@@ -69,6 +69,9 @@ async function run(): Promise<void> {
         )
         core.setFailed(err.toString())
       }
+    } else if (isReviewEvent()) {
+      console.log('Pull request review event')
+      console.log(github.context)
     } else if (isBranchEvent()) {
       console.log('Branch event')
 
@@ -89,9 +92,6 @@ async function run(): Promise<void> {
           })
         }
       }
-    } else if (isReviewEvent()) {
-      console.log('Pull request review event')
-      console.log(github.context)
     }
   } catch (err: any) {
     core.setFailed(err.toString())
@@ -110,7 +110,10 @@ function getValuesFromPayload(payload: any) {
     process.env.gh_repo_owner,
     process.env.gh_repo,
     process.env.pull_number,
-    process.env.branch_name,
+    process.env.current_branch_name,
+    process.env.dev_branch_name,
+    process.env.staging_branch_name,
+    process.env.main_branch_name,
     process.env.inprogress_state,
     process.env.pr_open_dev_state,
     process.env.pr_closed_dev_state,

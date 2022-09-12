@@ -106,9 +106,20 @@ function useAzureBoards(env) {
         const workItem = yield client.getWorkItem(workItemId);
         if (workItem) {
             console.log('Work Item Type: ' + workItem.fields['System.WorkItemType']);
+            const targetBranch = pullRequest.base.ref;
             switch (env.githubEventName) {
                 case 'pull_request':
-                    console.log('updateWorkItem: Is pull_request');
+                    console.log(`updateWorkItem: Is pull_request into ${targetBranch}`);
+                    switch (targetBranch) {
+                        case env.devBranchName:
+                            break;
+                        case env.stagingBranchName:
+                            break;
+                        case env.mainBranchName:
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 case 'pull_request_review':
                     console.log('updateWorkItem: Is pull_request_review');
@@ -135,7 +146,6 @@ function useAzureBoards(env) {
                 console.log('Product backlog item is not going to be automatically updated - needs to be updated manually.');
             }
             else {
-                const targetBranch = pullRequest.base.ref;
                 console.log(`Target branch: ${targetBranch}`);
                 if (pullRequest.status == '204') {
                     console.log('Event: Pull Request was merged');
@@ -442,14 +452,14 @@ function run() {
             const pullRequest = yield getPullRequest();
             console.log(`GitHub event name: ${vm.githubEventName}`);
             console.log(github.context);
-            console.log(pullRequest);
-            console.log(`Pull Request title: ${pullRequest.title}`);
-            console.log(`Pull Request body: ${pullRequest.body}`);
             if (isPullRequestEvent()) {
                 if (isBotEvent(pullRequest)) {
                     console.log('Bot branches are not to be processed');
                     return;
                 }
+                console.log(pullRequest);
+                console.log(`Pull Request title: ${pullRequest.title}`);
+                console.log(`Pull Request body: ${pullRequest.body}`);
                 try {
                     let workItemIds = getWorkItemIdsFromPullRequest(pullRequest);
                     if (workItemIds != null && workItemIds.length > 0) {
@@ -466,6 +476,10 @@ function run() {
                     core.setFailed('Wrong PR title format. Make sure it includes AB#<ticket_number>.');
                     core.setFailed(err.toString());
                 }
+            }
+            else if (isReviewEvent()) {
+                console.log('Pull request review event');
+                console.log(github.context);
             }
             else if (isBranchEvent()) {
                 console.log('Branch event');
@@ -486,10 +500,6 @@ function run() {
                     }
                 }
             }
-            else if (isReviewEvent()) {
-                console.log('Pull request review event');
-                console.log(github.context);
-            }
         }
         catch (err) {
             core.setFailed(err.toString());
@@ -497,7 +507,7 @@ function run() {
     });
 }
 function getValuesFromPayload(payload) {
-    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, process.env.branch_name, process.env.inprogress_state, process.env.pr_open_dev_state, process.env.pr_closed_dev_state, process.env.pr_open_staging_state, process.env.pr_closed_staging_state, process.env.pr_open_main_state, process.env.pr_closed_main_state);
+    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, process.env.current_branch_name, process.env.dev_branch_name, process.env.staging_branch_name, process.env.main_branch_name, process.env.inprogress_state, process.env.pr_open_dev_state, process.env.pr_closed_dev_state, process.env.pr_open_staging_state, process.env.pr_closed_staging_state, process.env.pr_open_main_state, process.env.pr_closed_main_state);
 }
 run();
 
@@ -512,7 +522,7 @@ run();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.actionEnvModel = void 0;
 class actionEnvModel {
-    constructor(action, githubEventName, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, branchName, inProgressState, openDevState, closedDevState, openStagingState, closedStagingState, openMainState, closedMainState) {
+    constructor(action, githubEventName, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, branchName, devBranchName, stagingBranchName, mainBranchName, inProgressState, openDevState, closedDevState, openStagingState, closedStagingState, openMainState, closedMainState) {
         this.action = action !== null && action !== void 0 ? action : '';
         this.githubEventName = githubEventName !== null && githubEventName !== void 0 ? githubEventName : '';
         this.githubPAT = githubPAT !== null && githubPAT !== void 0 ? githubPAT : '';
@@ -524,6 +534,9 @@ class actionEnvModel {
         this.repoName = repoName !== null && repoName !== void 0 ? repoName : '';
         this.pullRequestNumber = pullRequestNumber !== null && pullRequestNumber !== void 0 ? pullRequestNumber : '';
         this.branchName = branchName !== null && branchName !== void 0 ? branchName : '';
+        this.devBranchName = devBranchName !== null && devBranchName !== void 0 ? devBranchName : '';
+        this.stagingBranchName = stagingBranchName !== null && stagingBranchName !== void 0 ? stagingBranchName : '';
+        this.mainBranchName = mainBranchName !== null && mainBranchName !== void 0 ? mainBranchName : '';
         this.inProgressState = inProgressState !== null && inProgressState !== void 0 ? inProgressState : '';
         this.openDevState = openDevState !== null && openDevState !== void 0 ? openDevState : '';
         this.closedDevState = closedDevState !== null && closedDevState !== void 0 ? closedDevState : '';
