@@ -363,15 +363,15 @@ exports.useValidators = void 0;
 function useValidators(env) {
     const isPullRequestEvent = () => {
         var _a;
-        return (_a = env.githubEventName) === null || _a === void 0 ? void 0 : _a.includes('pull_request');
+        return ((_a = env.githubEventName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) == 'pull_request';
     };
     const isBranchEvent = () => {
         var _a;
-        return (_a = env.githubEventName) === null || _a === void 0 ? void 0 : _a.includes('push');
+        return ((_a = env.githubEventName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) == 'push';
     };
     const isReviewEvent = () => {
         var _a;
-        return (_a = env.githubEventName) === null || _a === void 0 ? void 0 : _a.includes('pull_request_review');
+        return ((_a = env.githubEventName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) == 'pull_request_review';
     };
     const isBotEvent = (pullRequest) => {
         return (pullRequest.title != null &&
