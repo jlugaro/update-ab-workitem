@@ -89,13 +89,17 @@ function useAzureBoards(env, context) {
         if (workItemIds.length == 0) {
             workItemIds = (_b = getWorkItemsFromText(pullRequest.body)) !== null && _b !== void 0 ? _b : [];
         }
-        workItemIds = [...workItemIds, ...getWorkItemIdsFromCommits(pullRequest)];
+        const workItemsFromCommit = getWorkItemIdsFromCommits(pullRequest);
+        console.log(`workItemsFromCommit: ${workItemsFromCommit}`);
+        console.log(`workItemsIds: ${workItemIds}`);
+        workItemIds = [...workItemIds, ...workItemsFromCommit];
         workItemIds = workItemIds.reduce((distinct, id) => {
             if (!distinct.includes(id)) {
                 distinct.push(id);
             }
             return distinct;
         }, []);
+        console.log(`reduced workitemsIds: ${workItemIds}`);
         return workItemIds;
     };
     const getWorkItemIdsFromContext = (context) => {
