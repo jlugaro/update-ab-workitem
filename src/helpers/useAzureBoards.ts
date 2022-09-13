@@ -379,6 +379,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
 
   return {
     getWorkItemIdsFromPullRequest,
+    getWorkItemIdsFromCommits,
     getWorkItemsFromText,
     getWorkItemIdFromBranchName,
     getWorkItemIdsFromContext,

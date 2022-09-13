@@ -352,6 +352,7 @@ function useAzureBoards(env, context) {
     // }
     return {
         getWorkItemIdsFromPullRequest,
+        getWorkItemIdsFromCommits,
         getWorkItemsFromText,
         getWorkItemIdFromBranchName,
         getWorkItemIdsFromContext,
@@ -546,12 +547,13 @@ const useValidators_1 = __nccwpck_require__(9218);
 const version = '1.0.0';
 global.Headers = fetch.Headers;
 function run() {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         console.log('VERSION ' + version);
         const vm = getValuesFromPayload(github.context.payload);
         const { isPullRequestEvent, isBranchEvent, isReviewEvent, isBotEvent, isProtectedBranch } = (0, useValidators_1.useValidators)(vm);
         const { getPullRequest, getCommitsFromPullRequest } = (0, useGithub_1.useGithub)(vm, github.context);
-        const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, getWorkItemIdsFromContext, updateWorkItemByPushEvent, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm, github.context);
+        const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, getWorkItemIdsFromContext, updateWorkItemByPushEvent, getWorkItemIdsFromCommits, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm, github.context);
         const updateWorkItemsFromPullRequest = (pullRequest) => __awaiter(this, void 0, void 0, function* () {
             console.log(`updateWorkItemsFromPullRequest ${pullRequest}`);
             const commits = yield getCommitsFromPullRequest(pullRequest);
@@ -602,17 +604,28 @@ function run() {
                 //   console.log('Automation will not handle commits pushed to master')
                 //   return
                 // }
-                var workItemId = getWorkItemIdFromBranchName(vm.currentBranchName);
-                if (workItemId != null) {
-                    yield updateWorkItem(workItemId, pullRequest);
+                let workItemIds = [];
+                if ((_b = (_a = github.context) === null || _a === void 0 ? void 0 : _a.payload) === null || _b === void 0 ? void 0 : _b.commits) {
+                    workItemIds = getWorkItemIdsFromCommits(github.context.payload.commits);
                 }
-                else {
-                    const workItemIds = getWorkItemIdsFromContext(github.context);
-                    if (workItemIds != null && workItemIds.length) {
-                        workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
-                            yield updateWorkItem(workItemId, null);
-                        }));
+                const workItemIdFromBranchName = getWorkItemIdFromBranchName(vm.currentBranchName);
+                if (workItemIdFromBranchName) {
+                    workItemIds.push(workItemIdFromBranchName);
+                }
+                const workItemIdsFromContext = getWorkItemIdsFromContext(github.context);
+                if (workItemIdsFromContext) {
+                    workItemIds.concat(workItemIdsFromContext);
+                }
+                workItemIds = workItemIds.reduce((distinct, id) => {
+                    if (!distinct.includes(id)) {
+                        distinct.push(id);
                     }
+                    return distinct;
+                }, []);
+                if (workItemIds != null && workItemIds.length) {
+                    workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
+                        yield updateWorkItem(workItemId, null);
+                    }));
                 }
             }
         }

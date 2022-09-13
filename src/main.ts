@@ -32,6 +32,7 @@ async function run(): Promise<void> {
     getWorkItemIdFromBranchName,
     getWorkItemIdsFromContext,
     updateWorkItemByPushEvent,
+    getWorkItemIdsFromCommits,
     updateWorkItem
   } = useAzureBoards(vm, github.context)
 
@@ -95,18 +96,37 @@ async function run(): Promise<void> {
       //   console.log('Automation will not handle commits pushed to master')
       //   return
       // }
+      let workItemIds: string[] = []
 
-      var workItemId = getWorkItemIdFromBranchName(vm.currentBranchName)
+      if (github.context?.payload?.commits) {
+        workItemIds = getWorkItemIdsFromCommits(github.context.payload.commits)
+      }
 
-      if (workItemId != null) {
-        await updateWorkItem(workItemId, pullRequest)
-      } else {
-        const workItemIds = getWorkItemIdsFromContext(github.context)
-        if (workItemIds != null && workItemIds.length) {
-          workItemIds.forEach(async (workItemId: string) => {
-            await updateWorkItem(workItemId, null)
-          })
+      const workItemIdFromBranchName = getWorkItemIdFromBranchName(
+        vm.currentBranchName
+      )
+
+      if (workItemIdFromBranchName) {
+        workItemIds.push(workItemIdFromBranchName)
+      }
+
+      const workItemIdsFromContext = getWorkItemIdsFromContext(github.context)
+
+      if (workItemIdsFromContext) {
+        workItemIds.concat(workItemIdsFromContext)
+      }
+
+      workItemIds = workItemIds.reduce((distinct: string[], id: string) => {
+        if (!distinct.includes(id)) {
+          distinct.push(id)
         }
+        return distinct
+      }, [])
+
+      if (workItemIds != null && workItemIds.length) {
+        workItemIds.forEach(async (workItemId: string) => {
+          await updateWorkItem(workItemId, null)
+        })
       }
     }
   } catch (err: any) {
