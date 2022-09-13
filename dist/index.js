@@ -50,7 +50,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.useAzureBoards = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const azureDevOpsHandler = __importStar(__nccwpck_require__(7967));
-function useAzureBoards(env) {
+function useAzureBoards(env, context) {
     const getWorkItemsFromText = (text) => {
         try {
             const idList = [];
@@ -377,7 +377,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.useGithub = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const node_fetch_1 = __importDefault(__nccwpck_require__(6882));
-function useGithub(env) {
+function useGithub(env, context) {
     const getRequestHeaders = (token) => {
         const h = new Headers();
         const auth = 'token ' + token;
@@ -387,7 +387,13 @@ function useGithub(env) {
     const getPullRequest = () => __awaiter(this, void 0, void 0, function* () {
         try {
             console.log('Getting pull request');
-            const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${env.pullRequestNumber}`;
+            let prNumber = env.pullRequestNumber;
+            if (prNumber == null) {
+                if (context.payload.pull_request) {
+                    prNumber = context.payload.pull_request.number;
+                }
+            }
+            const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${prNumber}`;
             console.log(`Pull Request URL: ${requestUrl}`);
             const res = yield (0, node_fetch_1.default)(requestUrl, {
                 method: 'GET',
@@ -502,10 +508,23 @@ function run() {
         console.log('VERSION ' + version);
         const vm = getValuesFromPayload(github.context.payload);
         const { isPullRequestEvent, isBranchEvent, isReviewEvent, isBotEvent, isProtectedBranch } = (0, useValidators_1.useValidators)(vm);
-        const { getPullRequest } = (0, useGithub_1.useGithub)(vm);
-        const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, getWorkItemIdsFromContext, updateWorkItemByPushEvent, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm);
+        const { getPullRequest } = (0, useGithub_1.useGithub)(vm, github.context);
+        const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, getWorkItemIdsFromContext, updateWorkItemByPushEvent, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm, github.context);
+        const updateWorkItemsFromPullRequest = (pullRequest) => __awaiter(this, void 0, void 0, function* () {
+            let workItemIds = getWorkItemIdsFromPullRequest(pullRequest);
+            if (workItemIds != null && workItemIds.length > 0) {
+                console.log('Found work items: ' + workItemIds.toString());
+                workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
+                    yield updateWorkItem(workItemId, pullRequest);
+                }));
+            }
+            else {
+                console.log(`No work items found to update.`);
+            }
+        });
         try {
             const pullRequest = yield getPullRequest();
+            console.log(`Pull Request: ${pullRequest}`);
             console.log(`GitHub event name: ${vm.githubEventName}`);
             console.log(github.context);
             if (isPullRequestEvent()) {
@@ -513,20 +532,10 @@ function run() {
                     console.log('Bot branches are not to be processed');
                     return;
                 }
-                console.log(pullRequest);
                 console.log(`Pull Request title: ${pullRequest.title}`);
                 console.log(`Pull Request body: ${pullRequest.body}`);
                 try {
-                    let workItemIds = getWorkItemIdsFromPullRequest(pullRequest);
-                    if (workItemIds != null && workItemIds.length > 0) {
-                        console.log('Found work items: ' + workItemIds.toString());
-                        workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
-                            yield updateWorkItem(workItemId, pullRequest);
-                        }));
-                    }
-                    else {
-                        console.log(`No work items found to update.`);
-                    }
+                    yield updateWorkItemsFromPullRequest(pullRequest);
                 }
                 catch (err) {
                     core.setFailed('Wrong PR title format. Make sure it includes AB#<ticket_number>.');
@@ -535,7 +544,7 @@ function run() {
             }
             else if (isReviewEvent()) {
                 console.log('Pull request review event');
-                console.log(github.context);
+                yield updateWorkItemsFromPullRequest(pullRequest);
             }
             else if (isBranchEvent()) {
                 console.log('Branch event');

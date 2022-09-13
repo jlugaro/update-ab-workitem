@@ -22,7 +22,7 @@ async function run(): Promise<void> {
     isProtectedBranch
   } = useValidators(vm)
 
-  const {getPullRequest} = useGithub(vm)
+  const {getPullRequest} = useGithub(vm, github.context)
 
   const {
     getWorkItemIdsFromPullRequest,
@@ -30,11 +30,25 @@ async function run(): Promise<void> {
     getWorkItemIdsFromContext,
     updateWorkItemByPushEvent,
     updateWorkItem
-  } = useAzureBoards(vm)
+  } = useAzureBoards(vm, github.context)
+
+  const updateWorkItemsFromPullRequest = async (pullRequest: any) => {
+    let workItemIds = getWorkItemIdsFromPullRequest(pullRequest)
+
+    if (workItemIds != null && workItemIds.length > 0) {
+      console.log('Found work items: ' + workItemIds.toString())
+
+      workItemIds.forEach(async (workItemId: string) => {
+        await updateWorkItem(workItemId, pullRequest)
+      })
+    } else {
+      console.log(`No work items found to update.`)
+    }
+  }
 
   try {
     const pullRequest = await getPullRequest()
-
+    console.log(`Pull Request: ${pullRequest}`)
     console.log(`GitHub event name: ${vm.githubEventName}`)
 
     console.log(github.context)
@@ -45,24 +59,11 @@ async function run(): Promise<void> {
         return
       }
 
-      console.log(pullRequest)
-
       console.log(`Pull Request title: ${pullRequest.title}`)
-
       console.log(`Pull Request body: ${pullRequest.body}`)
 
       try {
-        let workItemIds = getWorkItemIdsFromPullRequest(pullRequest)
-
-        if (workItemIds != null && workItemIds.length > 0) {
-          console.log('Found work items: ' + workItemIds.toString())
-
-          workItemIds.forEach(async (workItemId: string) => {
-            await updateWorkItem(workItemId, pullRequest)
-          })
-        } else {
-          console.log(`No work items found to update.`)
-        }
+        await updateWorkItemsFromPullRequest(pullRequest)
       } catch (err: any) {
         core.setFailed(
           'Wrong PR title format. Make sure it includes AB#<ticket_number>.'
@@ -71,7 +72,7 @@ async function run(): Promise<void> {
       }
     } else if (isReviewEvent()) {
       console.log('Pull request review event')
-      console.log(github.context)
+      await updateWorkItemsFromPullRequest(pullRequest)
     } else if (isBranchEvent()) {
       console.log('Branch event')
 

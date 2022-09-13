@@ -3,7 +3,7 @@ import * as azureDevOpsHandler from 'azure-devops-node-api'
 import {WorkItem} from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces'
 import {actionEnvModel} from '../models/actionEnvModel'
 
-export function useAzureBoards(env: actionEnvModel) {
+export function useAzureBoards(env: actionEnvModel, context: any) {
   const getWorkItemsFromText = (text: string) => {
     try {
       const idList: string[] = []
