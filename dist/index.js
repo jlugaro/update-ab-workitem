@@ -135,7 +135,7 @@ function useAzureBoards(env, context) {
         return connection.getWorkItemTrackingApi();
     });
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c;
+        var _a;
         console.log('Updating work item: ' + workItemId);
         const client = yield getApiClient();
         const workItem = yield client.getWorkItem(workItemId);
@@ -188,22 +188,23 @@ function useAzureBoards(env, context) {
                     console.log(`pushed to ${env.currentBranchName}. action: ${env.githubEventName}`);
                     switch (env.currentBranchName) {
                         case env.devBranchName:
-                            const headCommitMessage = (_c = (_b = context.payload) === null || _b === void 0 ? void 0 : _b.head_commit) === null || _c === void 0 ? void 0 : _c.message;
-                            if (headCommitMessage) {
-                                if (headCommitMessage.includes('pull request')) {
-                                    console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
-                                    yield setWorkItemState(workItemId, env.inReviewState);
-                                    break;
-                                }
+                            if (yield updateIfAlreadyHasPullRequest(workItemId, env.inReviewState)) {
+                                break;
                             }
                             console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
                             yield setWorkItemState(workItemId, env.inProgressState);
                             break;
                         case env.stagingBranchName:
+                            if (yield updateIfAlreadyHasPullRequest(workItemId, env.mergedState)) {
+                                break;
+                            }
                             console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
                             yield setWorkItemState(workItemId, env.stagingState);
                             break;
                         case env.mainBranchName:
+                            if (yield updateIfAlreadyHasPullRequest(workItemId, env.mergedState)) {
+                                break;
+                            }
                             console.log(`Moving work item ${workItemId} to ${env.closedState}`);
                             yield setWorkItemState(workItemId, env.closedState);
                             break;
@@ -219,6 +220,18 @@ function useAzureBoards(env, context) {
         else {
             console.log(`Work item not found for the provided id: ${workItemId}`);
         }
+    });
+    const updateIfAlreadyHasPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
+        var _b, _c;
+        const headCommitMessage = (_c = (_b = context.payload) === null || _b === void 0 ? void 0 : _b.head_commit) === null || _c === void 0 ? void 0 : _c.message;
+        if (headCommitMessage) {
+            if (headCommitMessage.includes('pull request')) {
+                console.log(`Moving work item ${workItemId} to ${state}`);
+                yield setWorkItemState(workItemId, state);
+                return true;
+            }
+        }
+        return false;
     });
     const setWorkItemState = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
         const client = yield getApiClient();

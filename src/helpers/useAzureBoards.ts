@@ -178,15 +178,13 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           )
           switch (env.currentBranchName) {
             case env.devBranchName:
-              const headCommitMessage = context.payload?.head_commit?.message
-              if (headCommitMessage) {
-                if (headCommitMessage.includes('pull request')) {
-                  console.log(
-                    `Moving work item ${workItemId} to ${env.inReviewState}`
-                  )
-                  await setWorkItemState(workItemId, env.inReviewState)
-                  break
-                }
+              if (
+                await updateIfAlreadyHasPullRequest(
+                  workItemId,
+                  env.inReviewState
+                )
+              ) {
+                break
               }
 
               console.log(
@@ -195,12 +193,22 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
               await setWorkItemState(workItemId, env.inProgressState)
               break
             case env.stagingBranchName:
+              if (
+                await updateIfAlreadyHasPullRequest(workItemId, env.mergedState)
+              ) {
+                break
+              }
               console.log(
                 `Moving work item ${workItemId} to ${env.stagingState}`
               )
               await setWorkItemState(workItemId, env.stagingState)
               break
             case env.mainBranchName:
+              if (
+                await updateIfAlreadyHasPullRequest(workItemId, env.mergedState)
+              ) {
+                break
+              }
               console.log(
                 `Moving work item ${workItemId} to ${env.closedState}`
               )
@@ -217,6 +225,21 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
     } else {
       console.log(`Work item not found for the provided id: ${workItemId}`)
     }
+  }
+
+  const updateIfAlreadyHasPullRequest = async (
+    workItemId: string,
+    state: string
+  ): Promise<boolean> => {
+    const headCommitMessage = context.payload?.head_commit?.message
+    if (headCommitMessage) {
+      if (headCommitMessage.includes('pull request')) {
+        console.log(`Moving work item ${workItemId} to ${state}`)
+        await setWorkItemState(workItemId, state)
+        return true
+      }
+    }
+    return false
   }
 
   const setWorkItemState = async (workItemId: string, state: string) => {
