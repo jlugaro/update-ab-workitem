@@ -22,7 +22,10 @@ async function run(): Promise<void> {
     isProtectedBranch
   } = useValidators(vm)
 
-  const {getPullRequest} = useGithub(vm, github.context)
+  const {getPullRequest, getCommitsFromPullRequest} = useGithub(
+    vm,
+    github.context
+  )
 
   const {
     getWorkItemIdsFromPullRequest,
@@ -34,7 +37,10 @@ async function run(): Promise<void> {
 
   const updateWorkItemsFromPullRequest = async (pullRequest: any) => {
     console.log(`updateWorkItemsFromPullRequest ${pullRequest}`)
-    let workItemIds = getWorkItemIdsFromPullRequest(pullRequest)
+
+    const commits = await getCommitsFromPullRequest(pullRequest)
+
+    let workItemIds = getWorkItemIdsFromPullRequest(pullRequest, commits)
 
     if (workItemIds != null && workItemIds.length > 0) {
       console.log('Found work items: ' + workItemIds.toString())

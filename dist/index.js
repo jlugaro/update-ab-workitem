@@ -83,13 +83,13 @@ function useAzureBoards(env, context) {
             core.setFailed('Branch name format is wrong. Make sure it starts from AB#<ticket_number>');
         }
     };
-    const getWorkItemIdsFromPullRequest = (pullRequest) => {
+    const getWorkItemIdsFromPullRequest = (pullRequest, commits) => {
         var _a, _b, _c;
         let workItemIds = (_a = getWorkItemsFromText(pullRequest.title)) !== null && _a !== void 0 ? _a : [];
         if (workItemIds.length == 0) {
             workItemIds = (_b = getWorkItemsFromText(pullRequest.body)) !== null && _b !== void 0 ? _b : [];
         }
-        const workItemsFromCommit = (_c = getWorkItemIdsFromCommits(pullRequest)) !== null && _c !== void 0 ? _c : [];
+        const workItemsFromCommit = (_c = getWorkItemIdsFromCommits(commits)) !== null && _c !== void 0 ? _c : [];
         console.log(`workItemsFromCommit: ${workItemsFromCommit}`);
         console.log(`workItemsIds: ${workItemIds}`);
         workItemIds = workItemIds.concat(workItemsFromCommit);
@@ -107,12 +107,10 @@ function useAzureBoards(env, context) {
         const workItemIds = getWorkItemsFromText((_b = (_a = context === null || context === void 0 ? void 0 : context.payload) === null || _a === void 0 ? void 0 : _a.head_commit) === null || _b === void 0 ? void 0 : _b.message);
         return workItemIds;
     };
-    const getWorkItemIdsFromCommits = (pullRequest) => {
+    const getWorkItemIdsFromCommits = (commits) => {
         let workItemIds = [];
-        if (pullRequest &&
-            pullRequest.commits != null &&
-            pullRequest.commits.length) {
-            pullRequest.commits.forEach((item) => {
+        if (commits != null && commits.length) {
+            commits.forEach((item) => {
                 var _a;
                 const ids = (_a = getWorkItemsFromText(item.commit.message)) !== null && _a !== void 0 ? _a : [];
                 workItemIds = workItemIds.concat(ids);
@@ -416,7 +414,7 @@ function useGithub(env, context) {
         h.append('Authorization', auth);
         return h;
     };
-    const getCommits = (pullRequest) => __awaiter(this, void 0, void 0, function* () {
+    const getCommitsFromPullRequest = (pullRequest) => __awaiter(this, void 0, void 0, function* () {
         if (pullRequest.commits_url) {
             const res = yield (0, node_fetch_1.default)(pullRequest.commits_url, {
                 method: 'GET',
@@ -448,7 +446,8 @@ function useGithub(env, context) {
         }
     });
     return {
-        getPullRequest
+        getPullRequest,
+        getCommitsFromPullRequest
     };
 }
 exports.useGithub = useGithub;
@@ -550,11 +549,12 @@ function run() {
         console.log('VERSION ' + version);
         const vm = getValuesFromPayload(github.context.payload);
         const { isPullRequestEvent, isBranchEvent, isReviewEvent, isBotEvent, isProtectedBranch } = (0, useValidators_1.useValidators)(vm);
-        const { getPullRequest } = (0, useGithub_1.useGithub)(vm, github.context);
+        const { getPullRequest, getCommitsFromPullRequest } = (0, useGithub_1.useGithub)(vm, github.context);
         const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, getWorkItemIdsFromContext, updateWorkItemByPushEvent, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm, github.context);
         const updateWorkItemsFromPullRequest = (pullRequest) => __awaiter(this, void 0, void 0, function* () {
             console.log(`updateWorkItemsFromPullRequest ${pullRequest}`);
-            let workItemIds = getWorkItemIdsFromPullRequest(pullRequest);
+            const commits = yield getCommitsFromPullRequest(pullRequest);
+            let workItemIds = getWorkItemIdsFromPullRequest(pullRequest, commits);
             if (workItemIds != null && workItemIds.length > 0) {
                 console.log('Found work items: ' + workItemIds.toString());
                 workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {

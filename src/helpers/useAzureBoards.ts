@@ -44,14 +44,14 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
     }
   }
 
-  const getWorkItemIdsFromPullRequest = (pullRequest: any) => {
+  const getWorkItemIdsFromPullRequest = (pullRequest: any, commits: any[]) => {
     let workItemIds = getWorkItemsFromText(pullRequest.title) ?? []
 
     if (workItemIds.length == 0) {
       workItemIds = getWorkItemsFromText(pullRequest.body) ?? []
     }
 
-    const workItemsFromCommit = getWorkItemIdsFromCommits(pullRequest) ?? []
+    const workItemsFromCommit = getWorkItemIdsFromCommits(commits) ?? []
     console.log(`workItemsFromCommit: ${workItemsFromCommit}`)
     console.log(`workItemsIds: ${workItemIds}`)
 
@@ -76,14 +76,10 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
     return workItemIds
   }
 
-  const getWorkItemIdsFromCommits = (pullRequest: any) => {
+  const getWorkItemIdsFromCommits = (commits: any[]) => {
     let workItemIds: string[] = []
-    if (
-      pullRequest &&
-      pullRequest.commits != null &&
-      pullRequest.commits.length
-    ) {
-      pullRequest.commits.forEach((item: {commit: {message: string}}) => {
+    if (commits != null && commits.length) {
+      commits.forEach((item: {commit: {message: string}}) => {
         const ids: string[] = getWorkItemsFromText(item.commit.message) ?? []
         workItemIds = workItemIds.concat(ids)
       })

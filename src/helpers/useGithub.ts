@@ -10,7 +10,7 @@ export function useGithub(env: actionEnvModel, context: any) {
     return h
   }
 
-  const getCommits = async (pullRequest: any): Promise<any> => {
+  const getCommitsFromPullRequest = async (pullRequest: any): Promise<any> => {
     if (pullRequest.commits_url) {
       const res = await fetch(pullRequest.commits_url, {
         method: 'GET',
@@ -51,6 +51,7 @@ export function useGithub(env: actionEnvModel, context: any) {
   }
 
   return {
-    getPullRequest
+    getPullRequest,
+    getCommitsFromPullRequest
   }
 }
