@@ -387,12 +387,14 @@ function useGithub(env, context) {
     const getPullRequest = () => __awaiter(this, void 0, void 0, function* () {
         try {
             console.log('Getting pull request');
+            console.log(`env.pullRequestNumber: ${env.pullRequestNumber}`);
             let prNumber = env.pullRequestNumber;
             if (prNumber == null) {
                 if (context.payload.pull_request) {
                     prNumber = context.payload.pull_request.number;
                 }
             }
+            console.log(`prNumber: ${prNumber}`);
             const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${prNumber}`;
             console.log(`Pull Request URL: ${requestUrl}`);
             const res = yield (0, node_fetch_1.default)(requestUrl, {

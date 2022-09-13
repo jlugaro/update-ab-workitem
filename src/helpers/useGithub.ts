@@ -14,6 +14,8 @@ export function useGithub(env: actionEnvModel, context: any) {
     try {
       console.log('Getting pull request')
 
+      console.log(`env.pullRequestNumber: ${env.pullRequestNumber}`)
+
       let prNumber = env.pullRequestNumber
 
       if (prNumber == null) {
@@ -21,6 +23,8 @@ export function useGithub(env: actionEnvModel, context: any) {
           prNumber = context.payload.pull_request.number
         }
       }
+
+      console.log(`prNumber: ${prNumber}`)
 
       const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${prNumber}`
 
