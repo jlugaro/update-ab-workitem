@@ -30,13 +30,19 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
       const foundMatches: RegExpMatchArray | null =
         branchName.match(/([0-9]+)/g)
 
-      console.log('Found matches on branch name' + foundMatches)
+      if (foundMatches) {
+        console.log('Found matches on branch name ' + foundMatches)
 
-      const workItemId = foundMatches && foundMatches[4]
+        const workItemId = foundMatches && foundMatches[4]
 
-      console.log('Work item ID: ' + workItemId)
+        console.log('Work item ID: ' + workItemId)
 
-      return workItemId
+        return workItemId
+      } else {
+        console.log(
+          'Did not found any Ids in the branch name, let`s continue...'
+        )
+      }
     } catch (err) {
       core.setFailed(
         'Branch name format is wrong. Make sure it starts from AB#<ticket_number>'
