@@ -98,11 +98,11 @@ async function run(): Promise<void> {
       // }
       let workItemIds: string[] = []
 
-      console.log(github.context.payload.commits)
+      //console.log(github.context.payload.commits)
 
-      if (github.context?.payload?.commits) {
-        workItemIds = getWorkItemIdsFromCommits(github.context.payload.commits)
-      }
+      // if (github.context?.payload?.commits) {
+      //   workItemIds = getWorkItemIdsFromCommits(github.context.payload.commits)
+      // }
 
       const workItemIdFromBranchName = getWorkItemIdFromBranchName(
         vm.currentBranchName
