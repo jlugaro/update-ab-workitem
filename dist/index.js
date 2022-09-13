@@ -111,8 +111,14 @@ function useAzureBoards(env, context) {
         let workItemIds = [];
         if (commits != null && commits.length) {
             commits.forEach((item) => {
-                var _a;
-                const ids = (_a = getWorkItemsFromText(item.commit.message)) !== null && _a !== void 0 ? _a : [];
+                var _a, _b;
+                let ids = [];
+                if (item.commit) {
+                    ids = (_a = getWorkItemsFromText(item.commit.message)) !== null && _a !== void 0 ? _a : [];
+                }
+                else {
+                    ids = (_b = getWorkItemsFromText(item.message)) !== null && _b !== void 0 ? _b : [];
+                }
                 workItemIds = workItemIds.concat(ids);
             });
         }
@@ -547,6 +553,7 @@ const useValidators_1 = __nccwpck_require__(9218);
 const version = '1.0.0';
 global.Headers = fetch.Headers;
 function run() {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         console.log('VERSION ' + version);
         const vm = getValuesFromPayload(github.context.payload);
@@ -569,7 +576,8 @@ function run() {
         });
         try {
             const pullRequest = yield getPullRequest();
-            console.log(`Pull Request: ${pullRequest}`);
+            console.log(`Pull Request: `);
+            console.log(pullRequest);
             console.log(`GitHub event name: ${vm.githubEventName}`);
             console.log(github.context);
             if (isPullRequestEvent()) {
@@ -604,10 +612,10 @@ function run() {
                 //   return
                 // }
                 let workItemIds = [];
-                //console.log(github.context.payload.commits)
-                // if (github.context?.payload?.commits) {
-                //   workItemIds = getWorkItemIdsFromCommits(github.context.payload.commits)
-                // }
+                console.log(github.context.payload.commits);
+                if ((_b = (_a = github.context) === null || _a === void 0 ? void 0 : _a.payload) === null || _b === void 0 ? void 0 : _b.commits) {
+                    workItemIds = getWorkItemIdsFromCommits(github.context.payload.commits);
+                }
                 const workItemIdFromBranchName = getWorkItemIdFromBranchName(vm.currentBranchName);
                 if (workItemIdFromBranchName) {
                     workItemIds.push(workItemIdFromBranchName);

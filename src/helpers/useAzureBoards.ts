@@ -79,8 +79,13 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
   const getWorkItemIdsFromCommits = (commits: any[]) => {
     let workItemIds: string[] = []
     if (commits != null && commits.length) {
-      commits.forEach((item: {commit: {message: string}}) => {
-        const ids: string[] = getWorkItemsFromText(item.commit.message) ?? []
+      commits.forEach((item: any) => {
+        let ids: string[] = []
+        if (item.commit) {
+          ids = getWorkItemsFromText(item.commit.message) ?? []
+        } else {
+          ids = getWorkItemsFromText(item.message) ?? []
+        }
         workItemIds = workItemIds.concat(ids)
       })
     }
