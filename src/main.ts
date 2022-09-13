@@ -49,6 +49,7 @@ async function run(): Promise<void> {
 
   try {
     const pullRequest = await getPullRequest()
+
     console.log(`Pull Request: ${pullRequest}`)
     console.log(`GitHub event name: ${vm.githubEventName}`)
 

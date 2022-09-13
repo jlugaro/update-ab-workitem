@@ -44,12 +44,7 @@ export function useGithub(env: actionEnvModel, context: any) {
         headers: getRequestHeaders(env.githubPAT)
       })
 
-      let pr: any = await res.json()
-      console.log(`pr: ${pr?.toString()}`)
-
-      pr.commits = await getCommits(pr)
-
-      console.log(`commits: ${pr.commits?.toString()}`)
+      return res.json()
     } catch (err: any) {
       core.setFailed(err.toString())
     }

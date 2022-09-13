@@ -424,7 +424,6 @@ function useGithub(env, context) {
         }
     });
     const getPullRequest = () => __awaiter(this, void 0, void 0, function* () {
-        var _a;
         try {
             console.log('Getting pull request');
             let prNumber = env.pullRequestNumber;
@@ -440,10 +439,7 @@ function useGithub(env, context) {
                 method: 'GET',
                 headers: getRequestHeaders(env.githubPAT)
             });
-            let pr = yield res.json();
-            console.log(`pr: ${pr === null || pr === void 0 ? void 0 : pr.toString()}`);
-            pr.commits = yield getCommits(pr);
-            console.log(`commits: ${(_a = pr.commits) === null || _a === void 0 ? void 0 : _a.toString()}`);
+            return res.json();
         }
         catch (err) {
             core.setFailed(err.toString());
