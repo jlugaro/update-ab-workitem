@@ -109,7 +109,9 @@ function useAzureBoards(env, context) {
     };
     const getWorkItemIdsFromCommits = (pullRequest) => {
         let workItemIds = [];
-        if (pullRequest && pullRequest.commits) {
+        if (pullRequest &&
+            pullRequest.commits != null &&
+            pullRequest.commits.length) {
             pullRequest.commits.forEach((item) => {
                 var _a;
                 const ids = (_a = getWorkItemsFromText(item.commit.message)) !== null && _a !== void 0 ? _a : [];
