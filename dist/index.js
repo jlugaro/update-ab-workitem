@@ -570,7 +570,7 @@ function run() {
             const pullRequest = yield getPullRequest();
             console.log(`Pull Request: ${pullRequest}`);
             console.log(`GitHub event name: ${vm.githubEventName}`);
-            console.log('github context:' + github.context.toString());
+            console.log(github.context);
             if (isPullRequestEvent()) {
                 if (isBotEvent(pullRequest)) {
                     console.log('Bot branches are not to be processed');
