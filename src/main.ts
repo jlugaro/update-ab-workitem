@@ -59,6 +59,8 @@ async function run(): Promise<void> {
     console.log(`Pull Request: ${pullRequest}`)
     console.log(`GitHub event name: ${vm.githubEventName}`)
 
+    console.log(`github context: ${github.context}`)
+
     if (isPullRequestEvent()) {
       if (isBotEvent(pullRequest)) {
         console.log('Bot branches are not to be processed')
@@ -72,13 +74,20 @@ async function run(): Promise<void> {
         await updateWorkItemsFromPullRequest(pullRequest)
       } catch (err: any) {
         core.setFailed(
-          'Wrong PR title format. Make sure it includes AB#<ticket_number>.'
+          'Could not find work items for the provided pull request. Make sure it includes AB#<ticket_number>.'
         )
         core.setFailed(err.toString())
       }
     } else if (isReviewEvent()) {
       console.log('Pull request review event')
-      await updateWorkItemsFromPullRequest(pullRequest)
+      try {
+        await updateWorkItemsFromPullRequest(pullRequest)
+      } catch (err: any) {
+        core.setFailed(
+          'Could not update the work item from the Pull Request Review.'
+        )
+        core.setFailed(err.toString())
+      }
     } else if (isBranchEvent()) {
       console.log('Branch event')
 

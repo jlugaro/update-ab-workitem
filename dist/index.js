@@ -75,7 +75,7 @@ function useAzureBoards(env, context) {
         try {
             const foundMatches = branchName.match(/([0-9]+)/g);
             console.log('Found matches on branch name' + foundMatches);
-            const workItemId = foundMatches && foundMatches[3];
+            const workItemId = foundMatches && foundMatches[4];
             console.log('Work item ID: ' + workItemId);
             return workItemId;
         }
@@ -124,12 +124,13 @@ function useAzureBoards(env, context) {
         return connection.getWorkItemTrackingApi();
     });
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
+        var _a;
         console.log('Updating work item: ' + workItemId);
         const client = yield getApiClient();
         const workItem = yield client.getWorkItem(workItemId);
         if (workItem) {
             console.log('Work Item Type: ' + workItem.fields['System.WorkItemType']);
-            const targetBranch = pullRequest.base.ref;
+            const targetBranch = pullRequest ? (_a = pullRequest.base) === null || _a === void 0 ? void 0 : _a.ref : null;
             switch (env.githubEventName) {
                 case 'pull_request':
                     console.log(`updateWorkItem: pull_request into ${targetBranch}`);
@@ -144,8 +145,8 @@ function useAzureBoards(env, context) {
                             switch (targetBranch) {
                                 case env.devBranchName:
                                 case env.stagingBranchName:
-                                    console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
-                                    yield setWorkItemState(workItemId, env.inReviewState);
+                                    console.log(`Moving work item ${workItemId} to ${env.stagingBranchName}`);
+                                    yield setWorkItemState(workItemId, env.stagingBranchName);
                                     break;
                                 case env.mainBranchName:
                                     console.log(`Moving work item ${workItemId} to ${env.mergedState}`);
@@ -569,6 +570,7 @@ function run() {
             const pullRequest = yield getPullRequest();
             console.log(`Pull Request: ${pullRequest}`);
             console.log(`GitHub event name: ${vm.githubEventName}`);
+            console.log(`github context: ${github.context}`);
             if (isPullRequestEvent()) {
                 if (isBotEvent(pullRequest)) {
                     console.log('Bot branches are not to be processed');
@@ -580,13 +582,19 @@ function run() {
                     yield updateWorkItemsFromPullRequest(pullRequest);
                 }
                 catch (err) {
-                    core.setFailed('Wrong PR title format. Make sure it includes AB#<ticket_number>.');
+                    core.setFailed('Could not find work items for the provided pull request. Make sure it includes AB#<ticket_number>.');
                     core.setFailed(err.toString());
                 }
             }
             else if (isReviewEvent()) {
                 console.log('Pull request review event');
-                yield updateWorkItemsFromPullRequest(pullRequest);
+                try {
+                    yield updateWorkItemsFromPullRequest(pullRequest);
+                }
+                catch (err) {
+                    core.setFailed('Could not update the work item from the Pull Request Review.');
+                    core.setFailed(err.toString());
+                }
             }
             else if (isBranchEvent()) {
                 console.log('Branch event');

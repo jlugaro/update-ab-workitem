@@ -32,7 +32,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
 
       console.log('Found matches on branch name' + foundMatches)
 
-      const workItemId = foundMatches && foundMatches[3]
+      const workItemId = foundMatches && foundMatches[4]
 
       console.log('Work item ID: ' + workItemId)
 
@@ -111,7 +111,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
 
     if (workItem) {
       console.log('Work Item Type: ' + workItem.fields['System.WorkItemType'])
-      const targetBranch = pullRequest.base.ref
+      const targetBranch = pullRequest ? pullRequest.base?.ref : null
 
       switch (env.githubEventName) {
         case 'pull_request':
@@ -130,9 +130,9 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
                 case env.devBranchName:
                 case env.stagingBranchName:
                   console.log(
-                    `Moving work item ${workItemId} to ${env.inReviewState}`
+                    `Moving work item ${workItemId} to ${env.stagingBranchName}`
                   )
-                  await setWorkItemState(workItemId, env.inReviewState)
+                  await setWorkItemState(workItemId, env.stagingBranchName)
                   break
                 case env.mainBranchName:
                   console.log(
