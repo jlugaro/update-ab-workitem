@@ -154,10 +154,16 @@ function useAzureBoards(env, context) {
                         case 'closed':
                             switch (targetBranch) {
                                 case env.devBranchName:
-                                case env.stagingBranchName:
-                                case env.mainBranchName:
                                     console.log(`Moving work item ${workItemId} to ${env.mergedState}`);
                                     yield setWorkItemState(workItemId, env.mergedState);
+                                    break;
+                                case env.stagingBranchName:
+                                    console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
+                                    yield setWorkItemState(workItemId, env.stagingState);
+                                    break;
+                                case env.mainBranchName:
+                                    console.log(`Moving work item ${workItemId} to ${env.closedState}`);
+                                    yield setWorkItemState(workItemId, env.closedState);
                                     break;
                                 default:
                                     //do nothin
@@ -195,16 +201,23 @@ function useAzureBoards(env, context) {
                             yield setWorkItemState(workItemId, env.inProgressState);
                             break;
                         case env.stagingBranchName:
-                            if (yield updateIfAlreadyHasPullRequest(workItemId, env.mergedState)) {
-                                break;
-                            }
+                            // if (
+                            //   await updateIfAlreadyHasPullRequest(workItemId, env.inReviewState)
+                            // ) {
+                            //   break
+                            // }
                             console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
                             yield setWorkItemState(workItemId, env.stagingState);
                             break;
                         case env.mainBranchName:
-                            if (yield updateIfAlreadyHasPullRequest(workItemId, env.mergedState)) {
-                                break;
-                            }
+                            // if (
+                            //   await updateIfAlreadyHasPullRequest(
+                            //     workItemId,
+                            //     env.inReviewState
+                            //   )
+                            // ) {
+                            //   break
+                            // }
                             console.log(`Moving work item ${workItemId} to ${env.closedState}`);
                             yield setWorkItemState(workItemId, env.closedState);
                             break;

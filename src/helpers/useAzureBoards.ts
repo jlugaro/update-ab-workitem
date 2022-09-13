@@ -138,12 +138,22 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
             case 'closed':
               switch (targetBranch) {
                 case env.devBranchName:
-                case env.stagingBranchName:
-                case env.mainBranchName:
                   console.log(
                     `Moving work item ${workItemId} to ${env.mergedState}`
                   )
                   await setWorkItemState(workItemId, env.mergedState)
+                  break
+                case env.stagingBranchName:
+                  console.log(
+                    `Moving work item ${workItemId} to ${env.stagingState}`
+                  )
+                  await setWorkItemState(workItemId, env.stagingState)
+                  break
+                case env.mainBranchName:
+                  console.log(
+                    `Moving work item ${workItemId} to ${env.closedState}`
+                  )
+                  await setWorkItemState(workItemId, env.closedState)
                   break
                 default:
                   //do nothin
@@ -193,22 +203,25 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
               await setWorkItemState(workItemId, env.inProgressState)
               break
             case env.stagingBranchName:
-              if (
-                await updateIfAlreadyHasPullRequest(workItemId, env.mergedState)
-              ) {
-                break
-              }
+              // if (
+              //   await updateIfAlreadyHasPullRequest(workItemId, env.inReviewState)
+              // ) {
+              //   break
+              // }
               console.log(
                 `Moving work item ${workItemId} to ${env.stagingState}`
               )
               await setWorkItemState(workItemId, env.stagingState)
               break
             case env.mainBranchName:
-              if (
-                await updateIfAlreadyHasPullRequest(workItemId, env.mergedState)
-              ) {
-                break
-              }
+              // if (
+              //   await updateIfAlreadyHasPullRequest(
+              //     workItemId,
+              //     env.inReviewState
+              //   )
+              // ) {
+              //   break
+              // }
               console.log(
                 `Moving work item ${workItemId} to ${env.closedState}`
               )
