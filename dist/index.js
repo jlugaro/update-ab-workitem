@@ -84,15 +84,15 @@ function useAzureBoards(env, context) {
         }
     };
     const getWorkItemIdsFromPullRequest = (pullRequest) => {
-        var _a, _b;
+        var _a, _b, _c;
         let workItemIds = (_a = getWorkItemsFromText(pullRequest.title)) !== null && _a !== void 0 ? _a : [];
         if (workItemIds.length == 0) {
             workItemIds = (_b = getWorkItemsFromText(pullRequest.body)) !== null && _b !== void 0 ? _b : [];
         }
-        const workItemsFromCommit = getWorkItemIdsFromCommits(pullRequest);
+        const workItemsFromCommit = (_c = getWorkItemIdsFromCommits(pullRequest)) !== null && _c !== void 0 ? _c : [];
         console.log(`workItemsFromCommit: ${workItemsFromCommit}`);
         console.log(`workItemsIds: ${workItemIds}`);
-        workItemIds = [...workItemIds, ...workItemsFromCommit];
+        workItemIds = workItemIds.concat(workItemsFromCommit);
         workItemIds = workItemIds.reduce((distinct, id) => {
             if (!distinct.includes(id)) {
                 distinct.push(id);
@@ -113,7 +113,7 @@ function useAzureBoards(env, context) {
             pullRequest.commits.forEach((item) => {
                 var _a;
                 const ids = (_a = getWorkItemsFromText(item.commit.message)) !== null && _a !== void 0 ? _a : [];
-                workItemIds = [...workItemIds, ...ids];
+                workItemIds = workItemIds.concat(ids);
             });
         }
         return workItemIds;
