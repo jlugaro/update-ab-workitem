@@ -524,7 +524,9 @@ function run() {
                     return distinct;
                 }, []);
                 if (workItemIds != null && workItemIds.length) {
+                    console.log('Found some work items...');
                     workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
+                        console.log('Setting up work item: ' + workItemId);
                         yield updateWorkItem(workItemId, null);
                     }));
                 }

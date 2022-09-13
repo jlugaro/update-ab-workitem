@@ -97,6 +97,7 @@ async function run(): Promise<void> {
       //   console.log('Automation will not handle commits pushed to master')
       //   return
       // }
+
       let workItemIds: string[] = []
 
       if (github.context?.payload?.commits) {
@@ -125,7 +126,9 @@ async function run(): Promise<void> {
       }, [])
 
       if (workItemIds != null && workItemIds.length) {
+        console.log('Found some work items...')
         workItemIds.forEach(async (workItemId: string) => {
+          console.log('Setting up work item: ' + workItemId)
           await updateWorkItem(workItemId, null)
         })
       }
