@@ -148,8 +148,8 @@ function useAzureBoards(env, context) {
                     switch (env.action) {
                         case 'opened':
                         case 'edited':
-                            console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
-                            yield setWorkItemState(workItemId, env.inProgressState);
+                            console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
+                            yield setWorkItemState(workItemId, env.inReviewState);
                             break;
                         case 'closed':
                             switch (targetBranch) {

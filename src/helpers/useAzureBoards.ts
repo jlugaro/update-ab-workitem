@@ -131,9 +131,9 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
             case 'opened':
             case 'edited':
               console.log(
-                `Moving work item ${workItemId} to ${env.inProgressState}`
+                `Moving work item ${workItemId} to ${env.inReviewState}`
               )
-              await setWorkItemState(workItemId, env.inProgressState)
+              await setWorkItemState(workItemId, env.inReviewState)
               break
             case 'closed':
               switch (targetBranch) {
