@@ -135,7 +135,7 @@ function useAzureBoards(env, context) {
         return connection.getWorkItemTrackingApi();
     });
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
-        var _a;
+        var _a, _b, _c;
         console.log('Updating work item: ' + workItemId);
         const client = yield getApiClient();
         const workItem = yield client.getWorkItem(workItemId);
@@ -155,9 +155,6 @@ function useAzureBoards(env, context) {
                             switch (targetBranch) {
                                 case env.devBranchName:
                                 case env.stagingBranchName:
-                                    console.log(`Moving work item ${workItemId} to ${env.stagingBranchName}`);
-                                    yield setWorkItemState(workItemId, env.stagingBranchName);
-                                    break;
                                 case env.mainBranchName:
                                     console.log(`Moving work item ${workItemId} to ${env.mergedState}`);
                                     yield setWorkItemState(workItemId, env.mergedState);
@@ -191,6 +188,14 @@ function useAzureBoards(env, context) {
                     console.log(`pushed to ${env.currentBranchName}. action: ${env.githubEventName}`);
                     switch (env.currentBranchName) {
                         case env.devBranchName:
+                            const headCommitMessage = (_c = (_b = context.payload) === null || _b === void 0 ? void 0 : _b.head_commit) === null || _c === void 0 ? void 0 : _c.message;
+                            if (headCommitMessage) {
+                                if (headCommitMessage.includes('pull request')) {
+                                    console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
+                                    yield setWorkItemState(workItemId, env.inReviewState);
+                                    break;
+                                }
+                            }
                             console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
                             yield setWorkItemState(workItemId, env.inProgressState);
                             break;

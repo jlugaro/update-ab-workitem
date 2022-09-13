@@ -139,11 +139,6 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
               switch (targetBranch) {
                 case env.devBranchName:
                 case env.stagingBranchName:
-                  console.log(
-                    `Moving work item ${workItemId} to ${env.stagingBranchName}`
-                  )
-                  await setWorkItemState(workItemId, env.stagingBranchName)
-                  break
                 case env.mainBranchName:
                   console.log(
                     `Moving work item ${workItemId} to ${env.mergedState}`
@@ -183,6 +178,17 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           )
           switch (env.currentBranchName) {
             case env.devBranchName:
+              const headCommitMessage = context.payload?.head_commit?.message
+              if (headCommitMessage) {
+                if (headCommitMessage.includes('pull request')) {
+                  console.log(
+                    `Moving work item ${workItemId} to ${env.inReviewState}`
+                  )
+                  await setWorkItemState(workItemId, env.inReviewState)
+                  break
+                }
+              }
+
               console.log(
                 `Moving work item ${workItemId} to ${env.inProgressState}`
               )
