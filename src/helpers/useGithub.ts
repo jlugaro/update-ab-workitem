@@ -43,7 +43,12 @@ export function useGithub(env: actionEnvModel, context: any) {
       })
 
       let pr: any = await res.json()
-      pr.commits = await getCommits(pr)
+      console.log(`pr: ${pr}`)
+
+      const commits = await getCommits(pr)
+      pr.commits = await commits.json()
+
+      console.log(`commits: ${pr.commits}`)
     } catch (err: any) {
       core.setFailed(err.toString())
     }

@@ -435,7 +435,10 @@ function useGithub(env, context) {
                 headers: getRequestHeaders(env.githubPAT)
             });
             let pr = yield res.json();
-            pr.commits = yield getCommits(pr);
+            console.log(`pr: ${pr}`);
+            const commits = yield getCommits(pr);
+            pr.commits = yield commits.json();
+            console.log(`commits: ${pr.commits}`);
         }
         catch (err) {
             core.setFailed(err.toString());
@@ -563,7 +566,6 @@ function run() {
             const pullRequest = yield getPullRequest();
             console.log(`Pull Request: ${pullRequest}`);
             console.log(`GitHub event name: ${vm.githubEventName}`);
-            console.log(github.context);
             if (isPullRequestEvent()) {
                 if (isBotEvent(pullRequest)) {
                     console.log('Bot branches are not to be processed');
