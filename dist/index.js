@@ -612,7 +612,6 @@ function run() {
                 //   return
                 // }
                 let workItemIds = [];
-                console.log(github.context.payload.commits);
                 if ((_b = (_a = github.context) === null || _a === void 0 ? void 0 : _a.payload) === null || _b === void 0 ? void 0 : _b.commits) {
                     workItemIds = getWorkItemIdsFromCommits(github.context.payload.commits);
                 }
