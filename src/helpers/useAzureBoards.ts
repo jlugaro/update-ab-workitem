@@ -86,16 +86,29 @@ export function useAzureBoards(env: actionEnvModel) {
     if (workItem) {
       console.log('Work Item Type: ' + workItem.fields['System.WorkItemType'])
       const targetBranch = pullRequest.base.ref
+
       switch (env.githubEventName) {
         case 'pull_request':
-          console.log(`updateWorkItem: Is pull_request into ${targetBranch}`)
-
-          switch (targetBranch) {
-            case env.devBranchName:
+          console.log(`updateWorkItem: pull_request into ${targetBranch}`)
+          console.log(`action: ${env.action}`)
+          switch (env.action) {
+            case 'opened':
+            case 'edited':
+              await setWorkItemState(workItemId, env.inProgressState)
               break
-            case env.stagingBranchName:
-              break
-            case env.mainBranchName:
+            case 'closed':
+              switch (targetBranch) {
+                case env.devBranchName:
+                case env.stagingBranchName:
+                  await setWorkItemState(workItemId, env.inReviewState)
+                  break
+                case env.mainBranchName:
+                  await setWorkItemState(workItemId, env.mergedState)
+                  break
+                default:
+                  //do nothin
+                  break
+              }
               break
             default:
               break
@@ -103,9 +116,38 @@ export function useAzureBoards(env: actionEnvModel) {
           break
         case 'pull_request_review':
           console.log('updateWorkItem: Is pull_request_review')
+          console.log(`pr review action: ${env.action}`)
+          switch (env.action) {
+            case 'submitted':
+            case 'edited':
+              await setWorkItemState(workItemId, env.inProgressState)
+              break
+            case 'closed':
+              //await setWorkItemState(workItemId, env.inReviewState)
+              break
+            default:
+              break
+          }
           break
         case 'push':
-          console.log('updateWorkItem: Is branch push')
+          console.log('updateWorkItem: Is branch push event')
+          console.log(
+            `pushed to ${env.currentBranchName}. action: ${env.action}`
+          )
+          switch (env.currentBranchName) {
+            case env.devBranchName:
+              await setWorkItemState(workItemId, env.inProgressState)
+              break
+            case env.stagingBranchName:
+              await setWorkItemState(workItemId, env.stagingState)
+              break
+            case env.mainBranchName:
+              await setWorkItemState(workItemId, env.closedState)
+              break
+            default:
+              //do nothin
+              break
+          }
           break
         default:
           break
@@ -124,73 +166,73 @@ export function useAzureBoards(env: actionEnvModel) {
       //   return
       // } else
 
-      if (workItem.fields['System.WorkItemType'] == 'Product Backlog Item') {
-        console.log(
-          'Product backlog item is not going to be automatically updated - needs to be updated manually.'
-        )
-      } else {
-        console.log(`Target branch: ${targetBranch}`)
+      // if (workItem.fields['System.WorkItemType'] == 'Product Backlog Item') {
+      //   console.log(
+      //     'Product backlog item is not going to be automatically updated - needs to be updated manually.'
+      //   )
+      // } else {
+      //   console.log(`Target branch: ${targetBranch}`)
 
-        if (pullRequest.status == '204') {
-          console.log('Event: Pull Request was merged')
-          await handleMergedPr(workItemId)
-        } else if (
-          //Development Branch
-          targetBranch == 'development' &&
-          pullRequest.state == 'open'
-        ) {
-          console.log(
-            'Event: Pull Request was opened, moving to: ' + env.openDevState
-          )
-          await handleOpenedDevPr(workItemId)
-        } else if (
-          targetBranch == 'Pre-Release' &&
-          pullRequest.state == 'push'
-        ) {
-          console.log(
-            'Event: Pull Request was opened, moving to: ' + env.closedDevState
-          )
-          await handleClosedDevPr(workItemId)
-        } else if (
-          //Staging Branch
-          targetBranch == 'Pre-Release' &&
-          pullRequest.state == 'open'
-        ) {
-          console.log(
-            'Event: Pull Request was opened, moving to: ' + env.openStagingState
-          )
-          await handleOpenedStagingPr(workItemId)
-        } else if (
-          targetBranch == 'Pre-Release' &&
-          pullRequest.state == 'closed'
-        ) {
-          console.log(
-            'Event: Pull Request was closed, moving to: ' +
-              env.closedStagingState
-          )
-          await handleClosedStagingPr(workItemId)
-        } else if (targetBranch == 'main' && pullRequest.state == 'push') {
-          console.log(
-            'Event: Pull Request was opened, moving to: ' +
-              env.closedStagingState
-          )
-          await handleClosedStagingPr(workItemId)
-        } else if (
-          //Main Branch
-          targetBranch == 'main' &&
-          pullRequest.state == 'open'
-        ) {
-          console.log(
-            'Event: Pull Request was opened, moving to: ' + env.openMainState
-          )
-          await handleOpenedMainPr(workItemId)
-        } else if (targetBranch == 'main' && pullRequest.state == 'push') {
-          console.log(
-            'Event: Pull Request was opened, moving to: ' + env.closedMainState
-          )
-          await handleClosedMainPr(workItemId)
-        }
-      }
+      //   if (pullRequest.status == '204') {
+      //     console.log('Event: Pull Request was merged')
+      //     await handleMergedPr(workItemId)
+      //   } else if (
+      //     //Development Branch
+      //     targetBranch == 'development' &&
+      //     pullRequest.state == 'open'
+      //   ) {
+      //     console.log(
+      //       'Event: Pull Request was opened, moving to: ' + env.openDevState
+      //     )
+      //     await handleOpenedDevPr(workItemId)
+      //   } else if (
+      //     targetBranch == 'Pre-Release' &&
+      //     pullRequest.state == 'push'
+      //   ) {
+      //     console.log(
+      //       'Event: Pull Request was opened, moving to: ' + env.closedDevState
+      //     )
+      //     await handleClosedDevPr(workItemId)
+      //   } else if (
+      //     //Staging Branch
+      //     targetBranch == 'Pre-Release' &&
+      //     pullRequest.state == 'open'
+      //   ) {
+      //     console.log(
+      //       'Event: Pull Request was opened, moving to: ' + env.openStagingState
+      //     )
+      //     await handleOpenedStagingPr(workItemId)
+      //   } else if (
+      //     targetBranch == 'Pre-Release' &&
+      //     pullRequest.state == 'closed'
+      //   ) {
+      //     console.log(
+      //       'Event: Pull Request was closed, moving to: ' +
+      //         env.closedStagingState
+      //     )
+      //     await handleClosedStagingPr(workItemId)
+      //   } else if (targetBranch == 'main' && pullRequest.state == 'push') {
+      //     console.log(
+      //       'Event: Pull Request was opened, moving to: ' +
+      //         env.closedStagingState
+      //     )
+      //     await handleClosedStagingPr(workItemId)
+      //   } else if (
+      //     //Main Branch
+      //     targetBranch == 'main' &&
+      //     pullRequest.state == 'open'
+      //   ) {
+      //     console.log(
+      //       'Event: Pull Request was opened, moving to: ' + env.openMainState
+      //     )
+      //     await handleOpenedMainPr(workItemId)
+      //   } else if (targetBranch == 'main' && pullRequest.state == 'push') {
+      //     console.log(
+      //       'Event: Pull Request was opened, moving to: ' + env.closedMainState
+      //     )
+      //     await handleClosedMainPr(workItemId)
+      //   }
+      //}
     } else {
       console.log(`Work item not found for the provided id: ${workItemId}`)
     }
@@ -226,10 +268,10 @@ export function useAzureBoards(env: actionEnvModel) {
 
       if (context.ref.includes('main')) {
         console.log('Updating by context: main')
-        handleClosedMainPr(workItemId)
+        //handleClosedMainPr(workItemId)
       } else if (context.ref.includes('pre-release')) {
         console.log('Updating by context: pre-release')
-        handleClosedStagingPr(workItemId)
+        //handleClosedStagingPr(workItemId)
       }
     } else {
       console.log(`Work item not found for the provided id: ${workItemId}`)
@@ -256,37 +298,37 @@ export function useAzureBoards(env: actionEnvModel) {
     )
   }
 
-  const handleMergedPr = async (workItemId: string) => {
-    await setWorkItemState(workItemId, env.closedMainState)
-  }
+  // const handleMergedPr = async (workItemId: string) => {
+  //   await setWorkItemState(workItemId, env.closedMainState)
+  // }
 
-  const handleOpenedDevPr = async (workItemId: string) => {
-    await setWorkItemState(workItemId, env.openDevState)
-  }
+  // const handleOpenedDevPr = async (workItemId: string) => {
+  //   await setWorkItemState(workItemId, env.openDevState)
+  // }
 
-  const handleClosedDevPr = async (workItemId: string) => {
-    await setWorkItemState(workItemId, env.inProgressState)
-  }
+  // const handleClosedDevPr = async (workItemId: string) => {
+  //   await setWorkItemState(workItemId, env.inProgressState)
+  // }
 
-  const handleOpenedStagingPr = async (workItemId: string) => {
-    await setWorkItemState(workItemId, env.openStagingState)
-  }
+  // const handleOpenedStagingPr = async (workItemId: string) => {
+  //   await setWorkItemState(workItemId, env.openStagingState)
+  // }
 
-  const handleClosedStagingPr = async (workItemId: string) => {
-    await setWorkItemState(workItemId, env.closedStagingState)
-  }
+  // const handleClosedStagingPr = async (workItemId: string) => {
+  //   await setWorkItemState(workItemId, env.closedStagingState)
+  // }
 
-  const handleOpenedMainPr = async (workItemId: string) => {
-    await setWorkItemState(workItemId, env.openMainState)
-  }
+  // const handleOpenedMainPr = async (workItemId: string) => {
+  //   await setWorkItemState(workItemId, env.openMainState)
+  // }
 
-  const handleClosedMainPr = async (workItemId: string) => {
-    await setWorkItemState(workItemId, env.closedMainState)
-  }
+  // const handleClosedMainPr = async (workItemId: string) => {
+  //   await setWorkItemState(workItemId, env.closedMainState)
+  // }
 
-  const handleOpenBranch = async (workItemId: string) => {
-    await setWorkItemState(workItemId, env.inProgressState)
-  }
+  // const handleOpenBranch = async (workItemId: string) => {
+  //   await setWorkItemState(workItemId, env.inProgressState)
+  // }
 
   return {
     getWorkItemIdsFromPullRequest,

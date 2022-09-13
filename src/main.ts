@@ -80,7 +80,7 @@ async function run(): Promise<void> {
       //   return
       // }
 
-      var workItemId = getWorkItemIdFromBranchName(vm.branchName)
+      var workItemId = getWorkItemIdFromBranchName(vm.currentBranchName)
 
       if (workItemId != null) {
         await updateWorkItem(workItemId, pullRequest)
@@ -88,7 +88,7 @@ async function run(): Promise<void> {
         const workItemIds = getWorkItemIdsFromContext(github.context)
         if (workItemIds != null && workItemIds.length) {
           workItemIds.forEach(async (workItemId: string) => {
-            await updateWorkItemByPushEvent(workItemId, github.context)
+            await updateWorkItem(workItemId, null)
           })
         }
       }
@@ -114,13 +114,11 @@ function getValuesFromPayload(payload: any) {
     process.env.dev_branch_name,
     process.env.staging_branch_name,
     process.env.main_branch_name,
-    process.env.inprogress_state,
-    process.env.pr_open_dev_state,
-    process.env.pr_closed_dev_state,
-    process.env.pr_open_staging_state,
-    process.env.pr_closed_staging_state,
-    process.env.pr_open_main_state,
-    process.env.pr_closed_main_state
+    process.env.in_progress_state,
+    process.env.in_review_state,
+    process.env.merged_state,
+    process.env.staging_state,
+    process.env.closed_state
   )
 }
 

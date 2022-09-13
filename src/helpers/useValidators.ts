@@ -22,7 +22,10 @@ export function useValidators(env: actionEnvModel) {
   }
 
   const isProtectedBranch = () => {
-    return env.branchName.includes('master') || env.branchName.includes('main')
+    return (
+      env.currentBranchName.includes('master') ||
+      env.currentBranchName.includes('main')
+    )
   }
 
   return {
