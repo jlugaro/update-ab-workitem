@@ -121,7 +121,6 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
     )
 
     if (workItem) {
-      console.log('Work Item Type: ' + workItem.fields['System.WorkItemType'])
       const targetBranch = pullRequest ? pullRequest.base?.ref : null
 
       switch (env.githubEventName) {

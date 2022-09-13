@@ -140,7 +140,6 @@ function useAzureBoards(env, context) {
         const client = yield getApiClient();
         const workItem = yield client.getWorkItem(workItemId);
         if (workItem) {
-            console.log('Work Item Type: ' + workItem.fields['System.WorkItemType']);
             const targetBranch = pullRequest ? (_a = pullRequest.base) === null || _a === void 0 ? void 0 : _a.ref : null;
             switch (env.githubEventName) {
                 case 'pull_request':
