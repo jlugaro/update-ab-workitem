@@ -643,7 +643,19 @@ function run() {
     });
 }
 function getValuesFromPayload(payload) {
-    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, process.env.current_branch_name, process.env.dev_branch_name, process.env.staging_branch_name, process.env.main_branch_name, process.env.in_progress_state, process.env.in_review_state, process.env.merged_state, process.env.staging_state, process.env.closed_state);
+    let branchName = process.env.current_branch_name;
+    if (branchName) {
+        if (branchName.includes(process.env.dev_branch_name)) {
+            branchName = process.env.dev_branch_name;
+        }
+        else if (branchName.includes(process.env.staging_branch_name)) {
+            branchName = process.env.staging_branch_name;
+        }
+        else if (branchName.includes(process.env.main_branch_name)) {
+            branchName = process.env.main_branch_name;
+        }
+    }
+    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, branchName, process.env.dev_branch_name, process.env.staging_branch_name, process.env.main_branch_name, process.env.in_progress_state, process.env.in_review_state, process.env.merged_state, process.env.staging_state, process.env.closed_state);
 }
 run();
 

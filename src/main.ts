@@ -139,6 +139,17 @@ async function run(): Promise<void> {
 }
 
 function getValuesFromPayload(payload: any) {
+  let branchName = process.env.current_branch_name
+  if (branchName) {
+    if (branchName.includes(process.env.dev_branch_name as string)) {
+      branchName = process.env.dev_branch_name
+    } else if (branchName.includes(process.env.staging_branch_name as string)) {
+      branchName = process.env.staging_branch_name
+    } else if (branchName.includes(process.env.main_branch_name as string)) {
+      branchName = process.env.main_branch_name
+    }
+  }
+
   return new actionEnvModel(
     payload.action,
     process.env.GITHUB_EVENT_NAME,
@@ -150,7 +161,7 @@ function getValuesFromPayload(payload: any) {
     process.env.gh_repo_owner,
     process.env.gh_repo,
     process.env.pull_number,
-    process.env.current_branch_name,
+    branchName,
     process.env.dev_branch_name,
     process.env.staging_branch_name,
     process.env.main_branch_name,
