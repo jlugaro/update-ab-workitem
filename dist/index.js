@@ -390,6 +390,7 @@ function useGithub(env, context) {
             console.log(`env.pullRequestNumber: ${env.pullRequestNumber}`);
             let prNumber = env.pullRequestNumber;
             if (prNumber == null) {
+                console.log(`context.payload.pull_request: ${context.payload.pull_request}`);
                 if (context.payload.pull_request) {
                     prNumber = context.payload.pull_request.number;
                 }
