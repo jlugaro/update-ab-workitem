@@ -84,15 +84,34 @@ function useAzureBoards(env, context) {
         }
     };
     const getWorkItemIdsFromPullRequest = (pullRequest) => {
-        let workItemIds = getWorkItemsFromText(pullRequest.title);
-        if (workItemIds == null || workItemIds.length == 0) {
-            workItemIds = getWorkItemsFromText(pullRequest.body);
+        var _a, _b;
+        let workItemIds = (_a = getWorkItemsFromText(pullRequest.title)) !== null && _a !== void 0 ? _a : [];
+        if (workItemIds.length == 0) {
+            workItemIds = (_b = getWorkItemsFromText(pullRequest.body)) !== null && _b !== void 0 ? _b : [];
         }
+        workItemIds = [...workItemIds, ...getWorkItemIdsFromCommits(pullRequest)];
+        workItemIds = workItemIds.reduce((distinct, id) => {
+            if (!distinct.includes(id)) {
+                distinct.push(id);
+            }
+            return distinct;
+        }, []);
         return workItemIds;
     };
     const getWorkItemIdsFromContext = (context) => {
         var _a, _b;
         const workItemIds = getWorkItemsFromText((_b = (_a = context === null || context === void 0 ? void 0 : context.payload) === null || _a === void 0 ? void 0 : _a.head_commit) === null || _b === void 0 ? void 0 : _b.message);
+        return workItemIds;
+    };
+    const getWorkItemIdsFromCommits = (pullRequest) => {
+        let workItemIds = [];
+        if (pullRequest && pullRequest.commits) {
+            pullRequest.commits.forEach((item) => {
+                var _a;
+                const ids = (_a = getWorkItemsFromText(item.commit.message)) !== null && _a !== void 0 ? _a : [];
+                workItemIds = [...workItemIds, ...ids];
+            });
+        }
         return workItemIds;
     };
     const getApiClient = () => __awaiter(this, void 0, void 0, function* () {
@@ -114,15 +133,18 @@ function useAzureBoards(env, context) {
                     switch (env.action) {
                         case 'opened':
                         case 'edited':
+                            console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
                             yield setWorkItemState(workItemId, env.inProgressState);
                             break;
                         case 'closed':
                             switch (targetBranch) {
                                 case env.devBranchName:
                                 case env.stagingBranchName:
+                                    console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
                                     yield setWorkItemState(workItemId, env.inReviewState);
                                     break;
                                 case env.mainBranchName:
+                                    console.log(`Moving work item ${workItemId} to ${env.mergedState}`);
                                     yield setWorkItemState(workItemId, env.mergedState);
                                     break;
                                 default:
@@ -140,6 +162,7 @@ function useAzureBoards(env, context) {
                     switch (env.action) {
                         case 'submitted':
                         case 'edited':
+                            console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
                             yield setWorkItemState(workItemId, env.inProgressState);
                             break;
                         case 'closed':
@@ -154,12 +177,15 @@ function useAzureBoards(env, context) {
                     console.log(`pushed to ${env.currentBranchName}. action: ${env.action}`);
                     switch (env.currentBranchName) {
                         case env.devBranchName:
+                            console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
                             yield setWorkItemState(workItemId, env.inProgressState);
                             break;
                         case env.stagingBranchName:
+                            console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
                             yield setWorkItemState(workItemId, env.stagingState);
                             break;
                         case env.mainBranchName:
+                            console.log(`Moving work item ${workItemId} to ${env.closedState}`);
                             yield setWorkItemState(workItemId, env.closedState);
                             break;
                         default:
@@ -384,25 +410,32 @@ function useGithub(env, context) {
         h.append('Authorization', auth);
         return h;
     };
+    const getCommits = (pullRequest) => __awaiter(this, void 0, void 0, function* () {
+        if (pullRequest.commits_url) {
+            return (0, node_fetch_1.default)(pullRequest.commits_url, {
+                method: 'GET',
+                headers: getRequestHeaders(env.githubPAT)
+            });
+        }
+    });
     const getPullRequest = () => __awaiter(this, void 0, void 0, function* () {
         try {
             console.log('Getting pull request');
-            console.log(`env.pullRequestNumber: ${env.pullRequestNumber}`);
             let prNumber = env.pullRequestNumber;
             if (!prNumber) {
-                console.log(`context.payload.pull_request: ${context.payload.pull_request}`);
                 if (context.payload.pull_request) {
                     prNumber = context.payload.pull_request.number;
                 }
             }
-            console.log(`prNumber: ${prNumber}`);
+            console.log(`PR number: ${prNumber}`);
             const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${prNumber}`;
             console.log(`Pull Request URL: ${requestUrl}`);
             const res = yield (0, node_fetch_1.default)(requestUrl, {
                 method: 'GET',
                 headers: getRequestHeaders(env.githubPAT)
             });
-            return res.json();
+            let pr = yield res.json();
+            pr.commits = yield getCommits(pr);
         }
         catch (err) {
             core.setFailed(err.toString());

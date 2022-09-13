@@ -45,11 +45,20 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
   }
 
   const getWorkItemIdsFromPullRequest = (pullRequest: any) => {
-    let workItemIds = getWorkItemsFromText(pullRequest.title)
+    let workItemIds = getWorkItemsFromText(pullRequest.title) ?? []
 
-    if (workItemIds == null || workItemIds.length == 0) {
-      workItemIds = getWorkItemsFromText(pullRequest.body)
+    if (workItemIds.length == 0) {
+      workItemIds = getWorkItemsFromText(pullRequest.body) ?? []
     }
+
+    workItemIds = [...workItemIds, ...getWorkItemIdsFromCommits(pullRequest)]
+
+    workItemIds = workItemIds.reduce((distinct: string[], id: string) => {
+      if (!distinct.includes(id)) {
+        distinct.push(id)
+      }
+      return distinct
+    }, [])
 
     return workItemIds
   }
@@ -58,6 +67,17 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
     const workItemIds = getWorkItemsFromText(
       context?.payload?.head_commit?.message
     )
+    return workItemIds
+  }
+
+  const getWorkItemIdsFromCommits = (pullRequest: any) => {
+    let workItemIds: string[] = []
+    if (pullRequest && pullRequest.commits) {
+      pullRequest.commits.forEach((item: {commit: {message: string}}) => {
+        const ids: string[] = getWorkItemsFromText(item.commit.message) ?? []
+        workItemIds = [...workItemIds, ...ids]
+      })
+    }
     return workItemIds
   }
 
@@ -94,15 +114,24 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           switch (env.action) {
             case 'opened':
             case 'edited':
+              console.log(
+                `Moving work item ${workItemId} to ${env.inProgressState}`
+              )
               await setWorkItemState(workItemId, env.inProgressState)
               break
             case 'closed':
               switch (targetBranch) {
                 case env.devBranchName:
                 case env.stagingBranchName:
+                  console.log(
+                    `Moving work item ${workItemId} to ${env.inReviewState}`
+                  )
                   await setWorkItemState(workItemId, env.inReviewState)
                   break
                 case env.mainBranchName:
+                  console.log(
+                    `Moving work item ${workItemId} to ${env.mergedState}`
+                  )
                   await setWorkItemState(workItemId, env.mergedState)
                   break
                 default:
@@ -120,6 +149,9 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           switch (env.action) {
             case 'submitted':
             case 'edited':
+              console.log(
+                `Moving work item ${workItemId} to ${env.inProgressState}`
+              )
               await setWorkItemState(workItemId, env.inProgressState)
               break
             case 'closed':
@@ -136,12 +168,21 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           )
           switch (env.currentBranchName) {
             case env.devBranchName:
+              console.log(
+                `Moving work item ${workItemId} to ${env.inProgressState}`
+              )
               await setWorkItemState(workItemId, env.inProgressState)
               break
             case env.stagingBranchName:
+              console.log(
+                `Moving work item ${workItemId} to ${env.stagingState}`
+              )
               await setWorkItemState(workItemId, env.stagingState)
               break
             case env.mainBranchName:
+              console.log(
+                `Moving work item ${workItemId} to ${env.closedState}`
+              )
               await setWorkItemState(workItemId, env.closedState)
               break
             default:

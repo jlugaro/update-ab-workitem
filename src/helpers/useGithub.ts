@@ -10,24 +10,28 @@ export function useGithub(env: actionEnvModel, context: any) {
     return h
   }
 
+  const getCommits = async (pullRequest: any): Promise<any> => {
+    if (pullRequest.commits_url) {
+      return fetch(pullRequest.commits_url, {
+        method: 'GET',
+        headers: getRequestHeaders(env.githubPAT)
+      })
+    }
+  }
+
   const getPullRequest = async (): Promise<any> => {
     try {
       console.log('Getting pull request')
 
-      console.log(`env.pullRequestNumber: ${env.pullRequestNumber}`)
-
       let prNumber = env.pullRequestNumber
 
       if (!prNumber) {
-        console.log(
-          `context.payload.pull_request: ${context.payload.pull_request}`
-        )
         if (context.payload.pull_request) {
           prNumber = context.payload.pull_request.number
         }
       }
 
-      console.log(`prNumber: ${prNumber}`)
+      console.log(`PR number: ${prNumber}`)
 
       const requestUrl = `https://api.github.com/repos/${env.repoOwner}/${env.repoName}/pulls/${prNumber}`
 
@@ -38,7 +42,8 @@ export function useGithub(env: actionEnvModel, context: any) {
         headers: getRequestHeaders(env.githubPAT)
       })
 
-      return res.json()
+      let pr: any = await res.json()
+      pr.commits = await getCommits(pr)
     } catch (err: any) {
       core.setFailed(err.toString())
     }
