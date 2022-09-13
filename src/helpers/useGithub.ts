@@ -18,7 +18,7 @@ export function useGithub(env: actionEnvModel, context: any) {
 
       let prNumber = env.pullRequestNumber
 
-      if (prNumber == null) {
+      if (!prNumber) {
         console.log(
           `context.payload.pull_request: ${context.payload.pull_request}`
         )
