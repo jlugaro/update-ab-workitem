@@ -511,6 +511,7 @@ function run() {
         const { getPullRequest } = (0, useGithub_1.useGithub)(vm, github.context);
         const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, getWorkItemIdsFromContext, updateWorkItemByPushEvent, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm, github.context);
         const updateWorkItemsFromPullRequest = (pullRequest) => __awaiter(this, void 0, void 0, function* () {
+            console.log(`updateWorkItemsFromPullRequest ${pullRequest}`);
             let workItemIds = getWorkItemIdsFromPullRequest(pullRequest);
             if (workItemIds != null && workItemIds.length > 0) {
                 console.log('Found work items: ' + workItemIds.toString());

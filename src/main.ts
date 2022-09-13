@@ -33,6 +33,7 @@ async function run(): Promise<void> {
   } = useAzureBoards(vm, github.context)
 
   const updateWorkItemsFromPullRequest = async (pullRequest: any) => {
+    console.log(`updateWorkItemsFromPullRequest ${pullRequest}`)
     let workItemIds = getWorkItemIdsFromPullRequest(pullRequest)
 
     if (workItemIds != null && workItemIds.length > 0) {
