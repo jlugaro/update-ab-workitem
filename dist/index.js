@@ -438,10 +438,12 @@ function useGithub(env, context) {
                 method: 'GET',
                 headers: getRequestHeaders(env.githubPAT)
             });
-            let pr = yield res.json();
+            let pr = res.json();
             console.log(`pr: ${pr}`);
             const commits = yield getCommits(pr);
-            pr.commits = yield commits.json();
+            if (commits) {
+                pr.commits = yield commits.json();
+            }
             console.log(`commits: ${pr.commits}`);
         }
         catch (err) {

@@ -42,11 +42,13 @@ export function useGithub(env: actionEnvModel, context: any) {
         headers: getRequestHeaders(env.githubPAT)
       })
 
-      let pr: any = await res.json()
+      let pr: any = res.json()
       console.log(`pr: ${pr}`)
 
       const commits = await getCommits(pr)
-      pr.commits = await commits.json()
+      if (commits) {
+        pr.commits = await commits.json()
+      }
 
       console.log(`commits: ${pr.commits}`)
     } catch (err: any) {
