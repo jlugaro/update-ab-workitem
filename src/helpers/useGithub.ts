@@ -12,10 +12,12 @@ export function useGithub(env: actionEnvModel, context: any) {
 
   const getCommits = async (pullRequest: any): Promise<any> => {
     if (pullRequest.commits_url) {
-      return fetch(pullRequest.commits_url, {
+      const res = await fetch(pullRequest.commits_url, {
         method: 'GET',
         headers: getRequestHeaders(env.githubPAT)
       })
+
+      return res.json()
     }
   }
 
@@ -42,15 +44,12 @@ export function useGithub(env: actionEnvModel, context: any) {
         headers: getRequestHeaders(env.githubPAT)
       })
 
-      let pr: any = res.json()
-      console.log(`pr: ${pr}`)
+      let pr: any = await res.json()
+      console.log(`pr: ${pr?.toString()}`)
 
-      const commits = await getCommits(pr)
-      if (commits) {
-        pr.commits = await commits.json()
-      }
+      pr.commits = await getCommits(pr)
 
-      console.log(`commits: ${pr.commits}`)
+      console.log(`commits: ${pr.commits?.toString()}`)
     } catch (err: any) {
       core.setFailed(err.toString())
     }
