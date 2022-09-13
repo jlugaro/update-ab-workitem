@@ -189,8 +189,7 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'push':
-                    console.log('updateWorkItem: Is branch push event');
-                    console.log(`pushed to ${env.currentBranchName}. action: ${env.action}`);
+                    console.log(`pushed to ${env.currentBranchName}. action: ${env.githubEventName}`);
                     switch (env.currentBranchName) {
                         case env.devBranchName:
                             console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
@@ -211,115 +210,6 @@ function useAzureBoards(env, context) {
                     break;
                 default:
                     break;
-            }
-            // if (workItem.fields['System.State'] == env.closedMainState) {
-            //   console.log('WorkItem is already closed and cannot be updated.')
-            //   return
-            // } else if (
-            //   workItem.fields['System.State'] == env.openMainState &&
-            //   pullRequest.status != '204'
-            // ) {
-            //   console.log(
-            //     'WorkItem is already in a state of PR open, will not update.'
-            //   )
-            //   return
-            // } else
-            // if (workItem.fields['System.WorkItemType'] == 'Product Backlog Item') {
-            //   console.log(
-            //     'Product backlog item is not going to be automatically updated - needs to be updated manually.'
-            //   )
-            // } else {
-            //   console.log(`Target branch: ${targetBranch}`)
-            //   if (pullRequest.status == '204') {
-            //     console.log('Event: Pull Request was merged')
-            //     await handleMergedPr(workItemId)
-            //   } else if (
-            //     //Development Branch
-            //     targetBranch == 'development' &&
-            //     pullRequest.state == 'open'
-            //   ) {
-            //     console.log(
-            //       'Event: Pull Request was opened, moving to: ' + env.openDevState
-            //     )
-            //     await handleOpenedDevPr(workItemId)
-            //   } else if (
-            //     targetBranch == 'Pre-Release' &&
-            //     pullRequest.state == 'push'
-            //   ) {
-            //     console.log(
-            //       'Event: Pull Request was opened, moving to: ' + env.closedDevState
-            //     )
-            //     await handleClosedDevPr(workItemId)
-            //   } else if (
-            //     //Staging Branch
-            //     targetBranch == 'Pre-Release' &&
-            //     pullRequest.state == 'open'
-            //   ) {
-            //     console.log(
-            //       'Event: Pull Request was opened, moving to: ' + env.openStagingState
-            //     )
-            //     await handleOpenedStagingPr(workItemId)
-            //   } else if (
-            //     targetBranch == 'Pre-Release' &&
-            //     pullRequest.state == 'closed'
-            //   ) {
-            //     console.log(
-            //       'Event: Pull Request was closed, moving to: ' +
-            //         env.closedStagingState
-            //     )
-            //     await handleClosedStagingPr(workItemId)
-            //   } else if (targetBranch == 'main' && pullRequest.state == 'push') {
-            //     console.log(
-            //       'Event: Pull Request was opened, moving to: ' +
-            //         env.closedStagingState
-            //     )
-            //     await handleClosedStagingPr(workItemId)
-            //   } else if (
-            //     //Main Branch
-            //     targetBranch == 'main' &&
-            //     pullRequest.state == 'open'
-            //   ) {
-            //     console.log(
-            //       'Event: Pull Request was opened, moving to: ' + env.openMainState
-            //     )
-            //     await handleOpenedMainPr(workItemId)
-            //   } else if (targetBranch == 'main' && pullRequest.state == 'push') {
-            //     console.log(
-            //       'Event: Pull Request was opened, moving to: ' + env.closedMainState
-            //     )
-            //     await handleClosedMainPr(workItemId)
-            //   }
-            //}
-        }
-        else {
-            console.log(`Work item not found for the provided id: ${workItemId}`);
-        }
-    });
-    const updateWorkItemByPushEvent = (workItemId, context) => __awaiter(this, void 0, void 0, function* () {
-        console.log('Updating work item: ' + workItemId);
-        const client = yield getApiClient();
-        const workItem = yield client.getWorkItem(workItemId);
-        if (workItem) {
-            console.log('Work Item Type: ' + workItem.fields['System.WorkItemType']);
-            // if (workItem.fields['System.State'] == env.closedMainState) {
-            //   console.log('WorkItem is already closed and cannot be updated.')
-            //   return
-            // } else if (
-            //   workItem.fields['System.State'] == env.openMainState &&
-            //   pullRequest.status != '204'
-            // ) {
-            //   console.log(
-            //     'WorkItem is already in a state of PR open, will not update.'
-            //   )
-            //   return
-            // } else
-            if (context.ref.includes('main')) {
-                console.log('Updating by context: main');
-                //handleClosedMainPr(workItemId)
-            }
-            else if (context.ref.includes('pre-release')) {
-                console.log('Updating by context: pre-release');
-                //handleClosedStagingPr(workItemId)
             }
         }
         else {
@@ -367,7 +257,6 @@ function useAzureBoards(env, context) {
         getWorkItemsFromText,
         getWorkItemIdFromBranchName,
         getWorkItemIdsFromContext,
-        updateWorkItemByPushEvent,
         updateWorkItem
     };
 }
@@ -564,7 +453,7 @@ function run() {
         const vm = getValuesFromPayload(github.context.payload);
         const { isPullRequestEvent, isBranchEvent, isReviewEvent, isBotEvent, isProtectedBranch } = (0, useValidators_1.useValidators)(vm);
         const { getPullRequest, getCommitsFromPullRequest } = (0, useGithub_1.useGithub)(vm, github.context);
-        const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, getWorkItemIdsFromContext, updateWorkItemByPushEvent, getWorkItemIdsFromCommits, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm, github.context);
+        const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, getWorkItemIdsFromContext, getWorkItemIdsFromCommits, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm, github.context);
         const updateWorkItemsFromPullRequest = (pullRequest) => __awaiter(this, void 0, void 0, function* () {
             console.log(`updateWorkItemsFromPullRequest ${pullRequest}`);
             const commits = yield getCommitsFromPullRequest(pullRequest);

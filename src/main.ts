@@ -31,7 +31,6 @@ async function run(): Promise<void> {
     getWorkItemIdsFromPullRequest,
     getWorkItemIdFromBranchName,
     getWorkItemIdsFromContext,
-    updateWorkItemByPushEvent,
     getWorkItemIdsFromCommits,
     updateWorkItem
   } = useAzureBoards(vm, github.context)
