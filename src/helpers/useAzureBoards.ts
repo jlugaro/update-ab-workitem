@@ -189,7 +189,11 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           switch (env.currentBranchName) {
             case env.devBranchName:
               if (
-                await updateIfAlreadyHasPullRequest(
+                await updateIfMergingPullRequest(workItemId, env.mergedState)
+              ) {
+                break
+              } else if (
+                await updateIfCommitingToPullRequest(
                   workItemId,
                   env.inReviewState
                 )
@@ -240,7 +244,22 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
     }
   }
 
-  const updateIfAlreadyHasPullRequest = async (
+  const updateIfMergingPullRequest = async (
+    workItemId: string,
+    state: string
+  ): Promise<boolean> => {
+    const headCommitMessage = context.payload?.head_commit?.message
+    if (headCommitMessage) {
+      if (headCommitMessage.includes('Merge pull request')) {
+        console.log(`Moving work item ${workItemId} to ${state}`)
+        await setWorkItemState(workItemId, state)
+        return true
+      }
+    }
+    return false
+  }
+
+  const updateIfCommitingToPullRequest = async (
     workItemId: string,
     state: string
   ): Promise<boolean> => {

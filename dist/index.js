@@ -194,7 +194,10 @@ function useAzureBoards(env, context) {
                     console.log(`pushed to ${env.currentBranchName}. action: ${env.githubEventName}`);
                     switch (env.currentBranchName) {
                         case env.devBranchName:
-                            if (yield updateIfAlreadyHasPullRequest(workItemId, env.inReviewState)) {
+                            if (yield updateIfMergingPullRequest(workItemId, env.mergedState)) {
+                                break;
+                            }
+                            else if (yield updateIfCommitingToPullRequest(workItemId, env.inReviewState)) {
                                 break;
                             }
                             console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
@@ -234,9 +237,21 @@ function useAzureBoards(env, context) {
             console.log(`Work item not found for the provided id: ${workItemId}`);
         }
     });
-    const updateIfAlreadyHasPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
+    const updateIfMergingPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
         var _b, _c;
         const headCommitMessage = (_c = (_b = context.payload) === null || _b === void 0 ? void 0 : _b.head_commit) === null || _c === void 0 ? void 0 : _c.message;
+        if (headCommitMessage) {
+            if (headCommitMessage.includes('Merge pull request')) {
+                console.log(`Moving work item ${workItemId} to ${state}`);
+                yield setWorkItemState(workItemId, state);
+                return true;
+            }
+        }
+        return false;
+    });
+    const updateIfCommitingToPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
+        var _d, _e;
+        const headCommitMessage = (_e = (_d = context.payload) === null || _d === void 0 ? void 0 : _d.head_commit) === null || _e === void 0 ? void 0 : _e.message;
         if (headCommitMessage) {
             if (headCommitMessage.includes('pull request')) {
                 console.log(`Moving work item ${workItemId} to ${state}`);
