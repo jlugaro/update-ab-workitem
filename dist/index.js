@@ -570,7 +570,11 @@ function run() {
 function getValuesFromPayload(payload) {
     let branchName = process.env.current_branch_name;
     if (branchName) {
-        if (branchName.includes(process.env.dev_branch_name)) {
+        if (branchName.includes('AB#')) {
+            //feature branch
+            branchName = process.env.dev_branch_name;
+        }
+        else if (branchName.includes(process.env.dev_branch_name)) {
             branchName = process.env.dev_branch_name;
         }
         else if (branchName.includes(process.env.staging_branch_name)) {

@@ -141,7 +141,10 @@ async function run(): Promise<void> {
 function getValuesFromPayload(payload: any) {
   let branchName = process.env.current_branch_name
   if (branchName) {
-    if (branchName.includes(process.env.dev_branch_name as string)) {
+    if (branchName.includes('AB#')) {
+      //feature branch
+      branchName = process.env.dev_branch_name
+    } else if (branchName.includes(process.env.dev_branch_name as string)) {
       branchName = process.env.dev_branch_name
     } else if (branchName.includes(process.env.staging_branch_name as string)) {
       branchName = process.env.staging_branch_name
