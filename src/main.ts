@@ -75,28 +75,23 @@ async function run(): Promise<void> {
       try {
         await updateWorkItemsFromPullRequest(pullRequest)
       } catch (err: any) {
-        core.setFailed(
+        console.log(
           'Could not find work items for the provided pull request. Make sure it includes AB#<ticket_number>.'
         )
-        core.setFailed(err.toString())
+        console.log(err.toString())
       }
     } else if (isReviewEvent()) {
       console.log('Pull request review event')
       try {
         await updateWorkItemsFromPullRequest(pullRequest)
       } catch (err: any) {
-        core.setFailed(
+        console.log(
           'Could not update the work item from the Pull Request Review.'
         )
-        core.setFailed(err.toString())
+        console.log(err.toString())
       }
     } else if (isBranchEvent()) {
       console.log('Branch event')
-
-      // if (isProtectedBranch()) {
-      //   console.log('Automation will not handle commits pushed to master')
-      //   return
-      // }
 
       let workItemIds: string[] = []
 
@@ -134,7 +129,7 @@ async function run(): Promise<void> {
       }
     }
   } catch (err: any) {
-    core.setFailed(err.toString())
+    console.log(err.toString())
   }
 }
 

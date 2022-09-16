@@ -458,7 +458,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__nccwpck_require__(2186));
 const fetch = __importStar(__nccwpck_require__(6882));
 const github = __importStar(__nccwpck_require__(5438));
 const useGithub_1 = __nccwpck_require__(6435);
@@ -506,8 +505,8 @@ function run() {
                     yield updateWorkItemsFromPullRequest(pullRequest);
                 }
                 catch (err) {
-                    core.setFailed('Could not find work items for the provided pull request. Make sure it includes AB#<ticket_number>.');
-                    core.setFailed(err.toString());
+                    console.log('Could not find work items for the provided pull request. Make sure it includes AB#<ticket_number>.');
+                    console.log(err.toString());
                 }
             }
             else if (isReviewEvent()) {
@@ -516,16 +515,12 @@ function run() {
                     yield updateWorkItemsFromPullRequest(pullRequest);
                 }
                 catch (err) {
-                    core.setFailed('Could not update the work item from the Pull Request Review.');
-                    core.setFailed(err.toString());
+                    console.log('Could not update the work item from the Pull Request Review.');
+                    console.log(err.toString());
                 }
             }
             else if (isBranchEvent()) {
                 console.log('Branch event');
-                // if (isProtectedBranch()) {
-                //   console.log('Automation will not handle commits pushed to master')
-                //   return
-                // }
                 let workItemIds = [];
                 if ((_b = (_a = github.context) === null || _a === void 0 ? void 0 : _a.payload) === null || _b === void 0 ? void 0 : _b.commits) {
                     workItemIds = getWorkItemIdsFromCommits(github.context.payload.commits);
@@ -554,7 +549,7 @@ function run() {
             }
         }
         catch (err) {
-            core.setFailed(err.toString());
+            console.log(err.toString());
         }
     });
 }
