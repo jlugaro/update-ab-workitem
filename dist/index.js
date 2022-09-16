@@ -48,7 +48,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.useAzureBoards = void 0;
-const core = __importStar(__nccwpck_require__(2186));
 const azureDevOpsHandler = __importStar(__nccwpck_require__(7967));
 function useAzureBoards(env, context) {
     const getWorkItemsFromText = (text) => {
@@ -68,7 +67,7 @@ function useAzureBoards(env, context) {
             return idList;
         }
         catch (err) {
-            core.setFailed('Wrong format. Make sure it includes AB#<ticket_number>');
+            console.log('Wrong format. Make sure it includes AB#<ticket_number>');
         }
     };
     const getWorkItemIdFromBranchName = (branchName) => {
@@ -85,7 +84,7 @@ function useAzureBoards(env, context) {
             }
         }
         catch (err) {
-            core.setFailed('Branch name format is wrong. Make sure it starts from AB#<ticket_number>');
+            console.log('Branch name format is wrong. Make sure it starts from AB#<ticket_number>');
         }
     };
     const getWorkItemIdsFromPullRequest = (pullRequest, commits) => {
@@ -151,7 +150,11 @@ function useAzureBoards(env, context) {
                         case 'edited':
                             console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
                             yield setWorkItemState(workItemId, env.inReviewState);
-                            yield setWorkItemAssignedTo(workItemId, 'Jean Carlo Semprit Rodriguez');
+                            console.log('created by: ');
+                            console.log(workItem.fields['System.CreatedBy']);
+                            if (workItem.fields['System.CreatedBy']) {
+                                yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
+                            }
                             break;
                         case 'closed':
                             switch (targetBranch) {
@@ -285,30 +288,6 @@ function useAzureBoards(env, context) {
         ];
         yield client.updateWorkItem([], patchDocument, workItemId, env.adoProject, false);
     });
-    // const handleMergedPr = async (workItemId: string) => {
-    //   await setWorkItemState(workItemId, env.closedMainState)
-    // }
-    // const handleOpenedDevPr = async (workItemId: string) => {
-    //   await setWorkItemState(workItemId, env.openDevState)
-    // }
-    // const handleClosedDevPr = async (workItemId: string) => {
-    //   await setWorkItemState(workItemId, env.inProgressState)
-    // }
-    // const handleOpenedStagingPr = async (workItemId: string) => {
-    //   await setWorkItemState(workItemId, env.openStagingState)
-    // }
-    // const handleClosedStagingPr = async (workItemId: string) => {
-    //   await setWorkItemState(workItemId, env.closedStagingState)
-    // }
-    // const handleOpenedMainPr = async (workItemId: string) => {
-    //   await setWorkItemState(workItemId, env.openMainState)
-    // }
-    // const handleClosedMainPr = async (workItemId: string) => {
-    //   await setWorkItemState(workItemId, env.closedMainState)
-    // }
-    // const handleOpenBranch = async (workItemId: string) => {
-    //   await setWorkItemState(workItemId, env.inProgressState)
-    // }
     return {
         getWorkItemIdsFromPullRequest,
         getWorkItemIdsFromCommits,

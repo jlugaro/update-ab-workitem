@@ -21,7 +21,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
       }
       return idList
     } catch (err) {
-      core.setFailed('Wrong format. Make sure it includes AB#<ticket_number>')
+      console.log('Wrong format. Make sure it includes AB#<ticket_number>')
     }
   }
 
@@ -43,7 +43,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
         )
       }
     } catch (err) {
-      core.setFailed(
+      console.log(
         'Branch name format is wrong. Make sure it starts from AB#<ticket_number>'
       )
     }
@@ -135,10 +135,16 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
                 `Moving work item ${workItemId} to ${env.inReviewState}`
               )
               await setWorkItemState(workItemId, env.inReviewState)
-              await setWorkItemAssignedTo(
-                workItemId,
-                'Jean Carlo Semprit Rodriguez'
-              )
+
+              console.log('created by: ')
+              console.log(workItem.fields['System.CreatedBy'])
+
+              if (workItem.fields['System.CreatedBy']) {
+                await setWorkItemAssignedTo(
+                  workItemId,
+                  workItem.fields['System.CreatedBy']
+                )
+              }
               break
             case 'closed':
               switch (targetBranch) {
@@ -321,38 +327,6 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
       false
     )
   }
-
-  // const handleMergedPr = async (workItemId: string) => {
-  //   await setWorkItemState(workItemId, env.closedMainState)
-  // }
-
-  // const handleOpenedDevPr = async (workItemId: string) => {
-  //   await setWorkItemState(workItemId, env.openDevState)
-  // }
-
-  // const handleClosedDevPr = async (workItemId: string) => {
-  //   await setWorkItemState(workItemId, env.inProgressState)
-  // }
-
-  // const handleOpenedStagingPr = async (workItemId: string) => {
-  //   await setWorkItemState(workItemId, env.openStagingState)
-  // }
-
-  // const handleClosedStagingPr = async (workItemId: string) => {
-  //   await setWorkItemState(workItemId, env.closedStagingState)
-  // }
-
-  // const handleOpenedMainPr = async (workItemId: string) => {
-  //   await setWorkItemState(workItemId, env.openMainState)
-  // }
-
-  // const handleClosedMainPr = async (workItemId: string) => {
-  //   await setWorkItemState(workItemId, env.closedMainState)
-  // }
-
-  // const handleOpenBranch = async (workItemId: string) => {
-  //   await setWorkItemState(workItemId, env.inProgressState)
-  // }
 
   return {
     getWorkItemIdsFromPullRequest,
