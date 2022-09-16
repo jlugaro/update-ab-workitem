@@ -178,10 +178,12 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           switch (env.action) {
             case 'submitted':
             case 'edited':
-              console.log(
-                `Moving work item ${workItemId} to ${env.inProgressState}`
-              )
-              await setWorkItemState(workItemId, env.inProgressState)
+              if (context.payload?.review?.state != 'approved') {
+                console.log(
+                  `Moving work item ${workItemId} to ${env.inProgressState}`
+                )
+                await setWorkItemState(workItemId, env.inProgressState)
+              }
               break
             case 'closed':
               break
