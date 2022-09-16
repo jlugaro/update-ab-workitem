@@ -119,6 +119,8 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
       <number>(<unknown>workItemId)
     )
 
+    console.log(workItem)
+
     if (workItem) {
       const targetBranch = pullRequest ? pullRequest.base?.ref : null
 
@@ -133,6 +135,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
                 `Moving work item ${workItemId} to ${env.inReviewState}`
               )
               await setWorkItemState(workItemId, env.inReviewState)
+              await setWorkItemAssignedTo(workItemId, 'John Lugaro')
               break
             case 'closed':
               switch (targetBranch) {
@@ -281,6 +284,29 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
         op: 'add',
         path: '/fields/System.State',
         value: state
+      }
+    ]
+
+    await client.updateWorkItem(
+      [],
+      patchDocument,
+      <number>(<unknown>workItemId),
+      env.adoProject,
+      false
+    )
+  }
+
+  const setWorkItemAssignedTo = async (
+    workItemId: string,
+    assignedTo: string
+  ) => {
+    const client = await getApiClient()
+
+    const patchDocument = [
+      {
+        op: 'add',
+        path: '/fields/System.AssignedTo',
+        value: assignedTo
       }
     ]
 

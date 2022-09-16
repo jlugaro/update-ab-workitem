@@ -73,12 +73,12 @@ function useAzureBoards(env, context) {
     };
     const getWorkItemIdFromBranchName = (branchName) => {
         try {
-            const foundMatches = branchName.match(/([0-9]+)/g);
-            if (foundMatches) {
-                console.log('Found matches on branch name ' + foundMatches);
-                const workItemId = foundMatches && foundMatches[4];
-                console.log('Work item ID: ' + workItemId);
-                return workItemId;
+            const match = branchName.match(/[AB#(0-9)]+/g);
+            if (match) {
+                const id = match[0].replace(/[AB#]*/g, '');
+                console.log('Found match on branch name: ' + branchName);
+                console.log('Work item ID: ' + id);
+                return id;
             }
             else {
                 console.log('Did not found any Ids in the branch name, let`s continue...');
@@ -139,6 +139,7 @@ function useAzureBoards(env, context) {
         console.log('Updating work item: ' + workItemId);
         const client = yield getApiClient();
         const workItem = yield client.getWorkItem(workItemId);
+        console.log(workItem);
         if (workItem) {
             const targetBranch = pullRequest ? (_a = pullRequest.base) === null || _a === void 0 ? void 0 : _a.ref : null;
             switch (env.githubEventName) {
@@ -150,6 +151,7 @@ function useAzureBoards(env, context) {
                         case 'edited':
                             console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
                             yield setWorkItemState(workItemId, env.inReviewState);
+                            yield setWorkItemAssignedTo(workItemId, 'John Lugaro');
                             break;
                         case 'closed':
                             switch (targetBranch) {
@@ -268,6 +270,17 @@ function useAzureBoards(env, context) {
                 op: 'add',
                 path: '/fields/System.State',
                 value: state
+            }
+        ];
+        yield client.updateWorkItem([], patchDocument, workItemId, env.adoProject, false);
+    });
+    const setWorkItemAssignedTo = (workItemId, assignedTo) => __awaiter(this, void 0, void 0, function* () {
+        const client = yield getApiClient();
+        const patchDocument = [
+            {
+                op: 'add',
+                path: '/fields/System.AssignedTo',
+                value: assignedTo
             }
         ];
         yield client.updateWorkItem([], patchDocument, workItemId, env.adoProject, false);
@@ -554,7 +567,7 @@ function run() {
                 if ((_b = (_a = github.context) === null || _a === void 0 ? void 0 : _a.payload) === null || _b === void 0 ? void 0 : _b.commits) {
                     workItemIds = getWorkItemIdsFromCommits(github.context.payload.commits);
                 }
-                const workItemIdFromBranchName = getWorkItemIdFromBranchName(vm.currentBranchName);
+                const workItemIdFromBranchName = getWorkItemIdFromBranchName(process.env.current_branch_name);
                 if (workItemIdFromBranchName) {
                     workItemIds.push(workItemIdFromBranchName);
                 }
