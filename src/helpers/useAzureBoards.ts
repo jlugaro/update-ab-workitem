@@ -27,17 +27,16 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
 
   const getWorkItemIdFromBranchName = (branchName: string) => {
     try {
-      const foundMatches: RegExpMatchArray | null =
-        branchName.match(/([0-9]+)/g)
+      const match: RegExpMatchArray | null = branchName.match(/[AB#(0-9)]+/g)
 
-      if (foundMatches) {
-        console.log('Found matches on branch name ' + foundMatches)
+      if (match) {
+        const id = match[0].replace(/[AB#]*/g, '')
 
-        const workItemId = foundMatches && foundMatches[4]
+        console.log('Found match on branch name: ' + branchName)
 
-        console.log('Work item ID: ' + workItemId)
+        console.log('Work item ID: ' + id)
 
-        return workItemId
+        return id
       } else {
         console.log(
           'Did not found any Ids in the branch name, let`s continue...'

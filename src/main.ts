@@ -105,7 +105,7 @@ async function run(): Promise<void> {
       }
 
       const workItemIdFromBranchName = getWorkItemIdFromBranchName(
-        vm.currentBranchName
+        process.env.current_branch_name as string
       )
 
       if (workItemIdFromBranchName) {
