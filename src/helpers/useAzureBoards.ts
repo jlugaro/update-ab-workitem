@@ -1,6 +1,4 @@
-import * as core from '@actions/core'
 import * as azureDevOpsHandler from 'azure-devops-node-api'
-import {WorkItem} from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces'
 import {actionEnvModel} from '../models/actionEnvModel'
 
 export function useAzureBoards(env: actionEnvModel, context: any) {
@@ -167,7 +165,6 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
                   await setWorkItemState(workItemId, env.closedState)
                   break
                 default:
-                  //do nothin
                   break
               }
               break
@@ -187,7 +184,6 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
               await setWorkItemState(workItemId, env.inProgressState)
               break
             case 'closed':
-              //await setWorkItemState(workItemId, env.inReviewState)
               break
             default:
               break
@@ -218,32 +214,18 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
               await setWorkItemState(workItemId, env.inProgressState)
               break
             case env.stagingBranchName:
-              // if (
-              //   await updateIfAlreadyHasPullRequest(workItemId, env.inReviewState)
-              // ) {
-              //   break
-              // }
               console.log(
                 `Moving work item ${workItemId} to ${env.stagingState}`
               )
               await setWorkItemState(workItemId, env.stagingState)
               break
             case env.mainBranchName:
-              // if (
-              //   await updateIfAlreadyHasPullRequest(
-              //     workItemId,
-              //     env.inReviewState
-              //   )
-              // ) {
-              //   break
-              // }
               console.log(
                 `Moving work item ${workItemId} to ${env.closedState}`
               )
               await setWorkItemState(workItemId, env.closedState)
               break
             default:
-              //do nothin
               break
           }
           break
