@@ -171,7 +171,6 @@ function useAzureBoards(env, context) {
                                     yield setWorkItemState(workItemId, env.closedState);
                                     break;
                                 default:
-                                    //do nothin
                                     break;
                             }
                             break;
@@ -189,7 +188,6 @@ function useAzureBoards(env, context) {
                             yield setWorkItemState(workItemId, env.inProgressState);
                             break;
                         case 'closed':
-                            //await setWorkItemState(workItemId, env.inReviewState)
                             break;
                         default:
                             break;
@@ -209,28 +207,14 @@ function useAzureBoards(env, context) {
                             yield setWorkItemState(workItemId, env.inProgressState);
                             break;
                         case env.stagingBranchName:
-                            // if (
-                            //   await updateIfAlreadyHasPullRequest(workItemId, env.inReviewState)
-                            // ) {
-                            //   break
-                            // }
                             console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
                             yield setWorkItemState(workItemId, env.stagingState);
                             break;
                         case env.mainBranchName:
-                            // if (
-                            //   await updateIfAlreadyHasPullRequest(
-                            //     workItemId,
-                            //     env.inReviewState
-                            //   )
-                            // ) {
-                            //   break
-                            // }
                             console.log(`Moving work item ${workItemId} to ${env.closedState}`);
                             yield setWorkItemState(workItemId, env.closedState);
                             break;
                         default:
-                            //do nothin
                             break;
                     }
                     break;
