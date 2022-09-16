@@ -135,7 +135,10 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
                 `Moving work item ${workItemId} to ${env.inReviewState}`
               )
               await setWorkItemState(workItemId, env.inReviewState)
-              await setWorkItemAssignedTo(workItemId, 'John Lugaro')
+              await setWorkItemAssignedTo(
+                workItemId,
+                'Jean Carlo Semprit Rodriguez'
+              )
               break
             case 'closed':
               switch (targetBranch) {

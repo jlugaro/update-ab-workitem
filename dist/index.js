@@ -151,7 +151,7 @@ function useAzureBoards(env, context) {
                         case 'edited':
                             console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
                             yield setWorkItemState(workItemId, env.inReviewState);
-                            yield setWorkItemAssignedTo(workItemId, 'John Lugaro');
+                            yield setWorkItemAssignedTo(workItemId, 'Jean Carlo Semprit Rodriguez');
                             break;
                         case 'closed':
                             switch (targetBranch) {
