@@ -134,11 +134,10 @@ function useAzureBoards(env, context) {
         return connection.getWorkItemTrackingApi();
     });
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c;
+        var _a, _b, _c, _d, _e, _f, _g;
         console.log('Updating work item: ' + workItemId);
         const client = yield getApiClient();
         const workItem = yield client.getWorkItem(workItemId);
-        console.log(workItem);
         if (workItem) {
             const targetBranch = pullRequest ? (_a = pullRequest.base) === null || _a === void 0 ? void 0 : _a.ref : null;
             switch (env.githubEventName) {
@@ -184,9 +183,15 @@ function useAzureBoards(env, context) {
                     switch (env.action) {
                         case 'submitted':
                         case 'edited':
-                            if (((_c = (_b = context.payload) === null || _b === void 0 ? void 0 : _b.review) === null || _c === void 0 ? void 0 : _c.state) != 'approved') {
+                            console.log('context.payload.review.state: ');
+                            console.log((_c = (_b = context.payload) === null || _b === void 0 ? void 0 : _b.review) === null || _c === void 0 ? void 0 : _c.state);
+                            if (((_e = (_d = context.payload) === null || _d === void 0 ? void 0 : _d.review) === null || _e === void 0 ? void 0 : _e.state) == 'changes_requested') {
                                 console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
                                 yield setWorkItemState(workItemId, env.inProgressState);
+                            }
+                            else if (((_g = (_f = context.payload) === null || _f === void 0 ? void 0 : _f.review) === null || _g === void 0 ? void 0 : _g.state) == 'approved') {
+                                console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
+                                yield setWorkItemState(workItemId, env.inReviewState);
                             }
                             break;
                         case 'closed':
@@ -229,8 +234,8 @@ function useAzureBoards(env, context) {
         }
     });
     const updateIfMergingPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _d, _e;
-        const headCommitMessage = (_e = (_d = context.payload) === null || _d === void 0 ? void 0 : _d.head_commit) === null || _e === void 0 ? void 0 : _e.message;
+        var _h, _j;
+        const headCommitMessage = (_j = (_h = context.payload) === null || _h === void 0 ? void 0 : _h.head_commit) === null || _j === void 0 ? void 0 : _j.message;
         if (headCommitMessage) {
             if (headCommitMessage.includes('Merge pull request')) {
                 console.log(`Moving work item ${workItemId} to ${state}`);
@@ -241,8 +246,8 @@ function useAzureBoards(env, context) {
         return false;
     });
     const updateIfCommitingToPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _f, _g;
-        const headCommitMessage = (_g = (_f = context.payload) === null || _f === void 0 ? void 0 : _f.head_commit) === null || _g === void 0 ? void 0 : _g.message;
+        var _k, _l;
+        const headCommitMessage = (_l = (_k = context.payload) === null || _k === void 0 ? void 0 : _k.head_commit) === null || _l === void 0 ? void 0 : _l.message;
         if (headCommitMessage) {
             if (headCommitMessage.includes('pull request')) {
                 console.log(`Moving work item ${workItemId} to ${state}`);
@@ -492,10 +497,7 @@ function run() {
         });
         try {
             const pullRequest = yield getPullRequest();
-            console.log(`Pull Request: `);
-            console.log(pullRequest);
             console.log(`GitHub event name: ${vm.githubEventName}`);
-            console.log(github.context);
             if (isPullRequestEvent()) {
                 if (isBotEvent(pullRequest)) {
                     console.log('Bot branches are not to be processed');

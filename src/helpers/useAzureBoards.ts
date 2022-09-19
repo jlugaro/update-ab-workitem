@@ -117,8 +117,6 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
       <number>(<unknown>workItemId)
     )
 
-    console.log(workItem)
-
     if (workItem) {
       const targetBranch = pullRequest ? pullRequest.base?.ref : null
 
@@ -178,11 +176,18 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           switch (env.action) {
             case 'submitted':
             case 'edited':
-              if (context.payload?.review?.state != 'approved') {
+              console.log('context.payload.review.state: ')
+              console.log(context.payload?.review?.state)
+              if (context.payload?.review?.state == 'changes_requested') {
                 console.log(
                   `Moving work item ${workItemId} to ${env.inProgressState}`
                 )
                 await setWorkItemState(workItemId, env.inProgressState)
+              } else if (context.payload?.review?.state == 'approved') {
+                console.log(
+                  `Moving work item ${workItemId} to ${env.inReviewState}`
+                )
+                await setWorkItemState(workItemId, env.inReviewState)
               }
               break
             case 'closed':

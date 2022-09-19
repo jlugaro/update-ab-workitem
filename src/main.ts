@@ -56,12 +56,7 @@ async function run(): Promise<void> {
   try {
     const pullRequest = await getPullRequest()
 
-    console.log(`Pull Request: `)
-    console.log(pullRequest)
-
     console.log(`GitHub event name: ${vm.githubEventName}`)
-
-    console.log(github.context)
 
     if (isPullRequestEvent()) {
       if (isBotEvent(pullRequest)) {
