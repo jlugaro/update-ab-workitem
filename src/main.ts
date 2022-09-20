@@ -132,7 +132,7 @@ function getValuesFromPayload(payload: any) {
   let branchName = process.env.current_branch_name
   if (branchName) {
     if (branchName.includes('AB#')) {
-      //feature branch
+      //feature branch will be handled as dev.
       branchName = process.env.dev_branch_name
     } else if (branchName.includes(process.env.dev_branch_name as string)) {
       branchName = process.env.dev_branch_name
