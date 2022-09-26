@@ -160,19 +160,21 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           switch (env.action) {
             case 'opened':
             case 'edited':
-              console.log(
-                `Moving work item ${workItemId} to ${env.inReviewState}`
-              )
-              await setWorkItemState(workItemId, env.inReviewState)
-
-              console.log('created by: ')
-              console.log(workItem.fields['System.CreatedBy'])
-
-              if (workItem.fields['System.CreatedBy']) {
-                await setWorkItemAssignedTo(
-                  workItemId,
-                  workItem.fields['System.CreatedBy']
+              if (env.currentBranchName == env.devBranchName) {
+                console.log(
+                  `Development Workflow: Moving work item ${workItemId} to ${env.inReviewState}`
                 )
+                await setWorkItemState(workItemId, env.inReviewState)
+
+                // console.log('created by: ')
+                // console.log(workItem.fields['System.CreatedBy'])
+
+                // if (workItem.fields['System.CreatedBy']) {
+                //   await setWorkItemAssignedTo(
+                //     workItemId,
+                //     workItem.fields['System.CreatedBy']
+                //   )
+                // }
               }
               break
 
@@ -180,21 +182,21 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
               switch (targetBranch) {
                 case env.devBranchName:
                   console.log(
-                    `Moving work item ${workItemId} to ${env.mergedState}`
+                    `Development Workflow: Moving work item ${workItemId} to ${env.mergedState}`
                   )
                   await setWorkItemState(workItemId, env.mergedState)
                   break
                 case env.stagingBranchName:
-                  console.log(
-                    `Moving work item ${workItemId} to ${env.approvedState}`
-                  )
-                  await setWorkItemState(workItemId, env.approvedState)
+                  // console.log(
+                  //   `Moving work item ${workItemId} to ${env.approvedState}`
+                  // )
+                  // await setWorkItemState(workItemId, env.approvedState)
                   break
                 case env.mainBranchName:
-                  console.log(
-                    `Moving work item ${workItemId} to ${env.closedState}`
-                  )
-                  await setWorkItemState(workItemId, env.closedState)
+                  // console.log(
+                  //   `Moving work item ${workItemId} to ${env.closedState}`
+                  // )
+                  // await setWorkItemState(workItemId, env.closedState)
                   break
                 default:
                   break
@@ -212,21 +214,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
             case 'edited':
               console.log('context.payload.review: ')
               console.log(context.payload?.review)
-
-              if (env.currentBranchName == env.stagingBranchName) {
-                if (context.payload?.review?.state == 'changes_requested') {
-                  //console.log(
-                  // `Moving work item ${workItemId} to ${env.rejectedState}`
-                  //)
-                  //getRejectedWorkItemsFromText()
-                  //await setWorkItemState(workItemId, env.rejectedState)
-                } else if (context.payload?.review?.state == 'approved') {
-                  // console.log(
-                  //   `Moving work item ${workItemId} to ${env.approvedState}`
-                  // )
-                  // await setWorkItemState(workItemId, env.approvedState)
-                }
-              } else {
+              if (env.currentBranchName == env.devBranchName) {
                 if (context.payload?.review?.state == 'changes_requested') {
                   console.log(
                     `Moving work item ${workItemId} to ${env.inProgressState}`
@@ -239,8 +227,6 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
                   await setWorkItemState(workItemId, env.inReviewState)
                 }
               }
-              break
-            case 'closed':
               break
             default:
               break

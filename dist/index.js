@@ -157,7 +157,7 @@ function useAzureBoards(env, context) {
         return connection.getWorkItemTrackingApi();
     });
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+        var _a, _b, _c, _d, _e, _f;
         console.log('Updating work item: ' + workItemId);
         const client = yield getApiClient();
         const workItem = yield client.getWorkItem(workItemId);
@@ -170,27 +170,36 @@ function useAzureBoards(env, context) {
                     switch (env.action) {
                         case 'opened':
                         case 'edited':
-                            console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
-                            yield setWorkItemState(workItemId, env.inReviewState);
-                            console.log('created by: ');
-                            console.log(workItem.fields['System.CreatedBy']);
-                            if (workItem.fields['System.CreatedBy']) {
-                                yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
+                            if (env.currentBranchName == env.devBranchName) {
+                                console.log(`Development Workflow: Moving work item ${workItemId} to ${env.inReviewState}`);
+                                yield setWorkItemState(workItemId, env.inReviewState);
+                                // console.log('created by: ')
+                                // console.log(workItem.fields['System.CreatedBy'])
+                                // if (workItem.fields['System.CreatedBy']) {
+                                //   await setWorkItemAssignedTo(
+                                //     workItemId,
+                                //     workItem.fields['System.CreatedBy']
+                                //   )
+                                // }
                             }
                             break;
                         case 'closed':
                             switch (targetBranch) {
                                 case env.devBranchName:
-                                    console.log(`Moving work item ${workItemId} to ${env.mergedState}`);
+                                    console.log(`Development Workflow: Moving work item ${workItemId} to ${env.mergedState}`);
                                     yield setWorkItemState(workItemId, env.mergedState);
                                     break;
                                 case env.stagingBranchName:
-                                    console.log(`Moving work item ${workItemId} to ${env.approvedState}`);
-                                    yield setWorkItemState(workItemId, env.approvedState);
+                                    // console.log(
+                                    //   `Moving work item ${workItemId} to ${env.approvedState}`
+                                    // )
+                                    // await setWorkItemState(workItemId, env.approvedState)
                                     break;
                                 case env.mainBranchName:
-                                    console.log(`Moving work item ${workItemId} to ${env.closedState}`);
-                                    yield setWorkItemState(workItemId, env.closedState);
+                                    // console.log(
+                                    //   `Moving work item ${workItemId} to ${env.closedState}`
+                                    // )
+                                    // await setWorkItemState(workItemId, env.closedState)
                                     break;
                                 default:
                                     break;
@@ -208,33 +217,16 @@ function useAzureBoards(env, context) {
                         case 'edited':
                             console.log('context.payload.review: ');
                             console.log((_b = context.payload) === null || _b === void 0 ? void 0 : _b.review);
-                            if (env.currentBranchName == env.stagingBranchName) {
+                            if (env.currentBranchName == env.devBranchName) {
                                 if (((_d = (_c = context.payload) === null || _c === void 0 ? void 0 : _c.review) === null || _d === void 0 ? void 0 : _d.state) == 'changes_requested') {
-                                    //console.log(
-                                    // `Moving work item ${workItemId} to ${env.rejectedState}`
-                                    //)
-                                    //getRejectedWorkItemsFromText()
-                                    //await setWorkItemState(workItemId, env.rejectedState)
-                                }
-                                else if (((_f = (_e = context.payload) === null || _e === void 0 ? void 0 : _e.review) === null || _f === void 0 ? void 0 : _f.state) == 'approved') {
-                                    // console.log(
-                                    //   `Moving work item ${workItemId} to ${env.approvedState}`
-                                    // )
-                                    // await setWorkItemState(workItemId, env.approvedState)
-                                }
-                            }
-                            else {
-                                if (((_h = (_g = context.payload) === null || _g === void 0 ? void 0 : _g.review) === null || _h === void 0 ? void 0 : _h.state) == 'changes_requested') {
                                     console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
                                     yield setWorkItemState(workItemId, env.inProgressState);
                                 }
-                                else if (((_k = (_j = context.payload) === null || _j === void 0 ? void 0 : _j.review) === null || _k === void 0 ? void 0 : _k.state) == 'approved') {
+                                else if (((_f = (_e = context.payload) === null || _e === void 0 ? void 0 : _e.review) === null || _f === void 0 ? void 0 : _f.state) == 'approved') {
                                     console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
                                     yield setWorkItemState(workItemId, env.inReviewState);
                                 }
                             }
-                            break;
-                        case 'closed':
                             break;
                         default:
                             break;
@@ -274,8 +266,8 @@ function useAzureBoards(env, context) {
         }
     });
     const updateIfMergingPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _l, _m;
-        const headCommitMessage = (_m = (_l = context.payload) === null || _l === void 0 ? void 0 : _l.head_commit) === null || _m === void 0 ? void 0 : _m.message;
+        var _g, _h;
+        const headCommitMessage = (_h = (_g = context.payload) === null || _g === void 0 ? void 0 : _g.head_commit) === null || _h === void 0 ? void 0 : _h.message;
         if (headCommitMessage) {
             if (headCommitMessage.includes('Merge pull request')) {
                 console.log(`Moving work item ${workItemId} to ${state}`);
@@ -286,8 +278,8 @@ function useAzureBoards(env, context) {
         return false;
     });
     const updateIfCommitingToPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _o, _p;
-        const headCommitMessage = (_p = (_o = context.payload) === null || _o === void 0 ? void 0 : _o.head_commit) === null || _p === void 0 ? void 0 : _p.message;
+        var _j, _k;
+        const headCommitMessage = (_k = (_j = context.payload) === null || _j === void 0 ? void 0 : _j.head_commit) === null || _k === void 0 ? void 0 : _k.message;
         if (headCommitMessage) {
             if (headCommitMessage.includes('pull request')) {
                 console.log(`Moving work item ${workItemId} to ${state}`);
