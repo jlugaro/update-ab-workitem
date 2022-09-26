@@ -191,6 +191,21 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
                   //   `Moving work item ${workItemId} to ${env.approvedState}`
                   // )
                   // await setWorkItemState(workItemId, env.approvedState)
+
+                  console.log(
+                    `Moving work item ${workItemId} to ${env.stagingState}`
+                  )
+                  await setWorkItemState(workItemId, env.stagingState)
+
+                  console.log('created by: ')
+                  console.log(workItem.fields['System.CreatedBy'])
+
+                  if (workItem.fields['System.CreatedBy']) {
+                    await setWorkItemAssignedTo(
+                      workItemId,
+                      workItem.fields['System.CreatedBy']
+                    )
+                  }
                   break
                 case env.mainBranchName:
                   // console.log(

@@ -194,6 +194,13 @@ function useAzureBoards(env, context) {
                                     //   `Moving work item ${workItemId} to ${env.approvedState}`
                                     // )
                                     // await setWorkItemState(workItemId, env.approvedState)
+                                    console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
+                                    yield setWorkItemState(workItemId, env.stagingState);
+                                    console.log('created by: ');
+                                    console.log(workItem.fields['System.CreatedBy']);
+                                    if (workItem.fields['System.CreatedBy']) {
+                                        yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
+                                    }
                                     break;
                                 case env.mainBranchName:
                                     // console.log(
