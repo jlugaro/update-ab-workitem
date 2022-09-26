@@ -160,7 +160,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           switch (env.action) {
             case 'opened':
             case 'edited':
-              if (env.currentBranchName == env.devBranchName) {
+              if (targetBranch == env.devBranchName) {
                 console.log(
                   `Development Workflow: Moving work item ${workItemId} to ${env.inReviewState}`
                 )
@@ -261,6 +261,16 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
                 `Moving work item ${workItemId} to ${env.stagingState}`
               )
               await setWorkItemState(workItemId, env.stagingState)
+
+              console.log('created by: ')
+              console.log(workItem.fields['System.CreatedBy'])
+
+              if (workItem.fields['System.CreatedBy']) {
+                await setWorkItemAssignedTo(
+                  workItemId,
+                  workItem.fields['System.CreatedBy']
+                )
+              }
               break
             case env.mainBranchName:
               console.log(

@@ -170,7 +170,7 @@ function useAzureBoards(env, context) {
                     switch (env.action) {
                         case 'opened':
                         case 'edited':
-                            if (env.currentBranchName == env.devBranchName) {
+                            if (targetBranch == env.devBranchName) {
                                 console.log(`Development Workflow: Moving work item ${workItemId} to ${env.inReviewState}`);
                                 yield setWorkItemState(workItemId, env.inReviewState);
                                 // console.log('created by: ')
@@ -248,6 +248,11 @@ function useAzureBoards(env, context) {
                         case env.stagingBranchName:
                             console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
                             yield setWorkItemState(workItemId, env.stagingState);
+                            console.log('created by: ');
+                            console.log(workItem.fields['System.CreatedBy']);
+                            if (workItem.fields['System.CreatedBy']) {
+                                yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
+                            }
                             break;
                         case env.mainBranchName:
                             console.log(`Moving work item ${workItemId} to ${env.closedState}`);
