@@ -23,36 +23,37 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
     }
   }
 
-  // const getRejectedWorkItemsFromText = (text: string) => {
-  //   try {
-  //     const idList: string[] = []
-  //     const rejected = text.match(/(?<=Rejected:).*(AB#[(0-9)]+)/g)
+  const getRejectedWorkItemsFromText = (text: string) => {
+    try {
+      const idList: string[] = []
+      const matches: string[] = []
 
-  //     const matches: string[] = [];
-
-  //     if (rejected) {
-  //       rejected.forEach(r => {
-  //         const match = r.match(/AB#[(0-9)]*/g)
-  //         if (match)
-  //           matches.push(match);
-  //       })
-  //     }
-
-  //     if (matches) {
-  //       matches.forEach(id => {
-  //         if (id && id.match(/[AB#]+/g)) {
-  //           const newId = id.replace(/[AB#]*/g, '')
-  //           if (newId) {
-  //             idList.push(newId)
-  //           }
-  //         }
-  //       })
-  //     }
-  //     return idList
-  //   } catch (err) {
-  //     console.log('Wrong format. Make sure it includes AB#<ticket_number>')
-  //   }
-  // }
+      const rejected = text.match(/(?<=Rejected:).*(AB#[(0-9)]+)/g)
+      if (rejected) {
+        rejected.forEach(r => {
+          const rejectedMatches = r.match(/AB#[(0-9)]*/g)
+          if (rejectedMatches) {
+            rejectedMatches.forEach(r => {
+              matches.push(r)
+            })
+          }
+        })
+      }
+      if (matches) {
+        matches.forEach(id => {
+          if (id && id.match(/[AB#]+/g)) {
+            const newId = id.replace(/[AB#]*/g, '')
+            if (newId) {
+              idList.push(newId)
+            }
+          }
+        })
+      }
+      return idList
+    } catch (err) {
+      console.log('Could not find any rejected work items')
+    }
+  }
 
   const getWorkItemIdFromBranchName = (branchName: string) => {
     try {
@@ -209,14 +210,15 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           switch (env.action) {
             case 'submitted':
             case 'edited':
-              console.log('context.payload.review.state: ')
-              console.log(context.payload?.review?.state)
+              console.log('context.payload.review: ')
+              console.log(context.payload?.review)
 
               if (env.currentBranchName == env.stagingBranchName) {
                 if (context.payload?.review?.state == 'changes_requested') {
                   //console.log(
                   // `Moving work item ${workItemId} to ${env.rejectedState}`
                   //)
+                  //getRejectedWorkItemsFromText()
                   //await setWorkItemState(workItemId, env.rejectedState)
                 } else if (context.payload?.review?.state == 'approved') {
                   // console.log(

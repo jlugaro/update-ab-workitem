@@ -62,33 +62,37 @@ function useAzureBoards(env, context) {
             console.log('Wrong format. Make sure it includes AB#<ticket_number>');
         }
     };
-    // const getRejectedWorkItemsFromText = (text: string) => {
-    //   try {
-    //     const idList: string[] = []
-    //     const rejected = text.match(/(?<=Rejected:).*(AB#[(0-9)]+)/g)
-    //     const matches: string[] = [];
-    //     if (rejected) {
-    //       rejected.forEach(r => {
-    //         const match = r.match(/AB#[(0-9)]*/g)
-    //         if (match)
-    //           matches.push(match);
-    //       })
-    //     }
-    //     if (matches) {
-    //       matches.forEach(id => {
-    //         if (id && id.match(/[AB#]+/g)) {
-    //           const newId = id.replace(/[AB#]*/g, '')
-    //           if (newId) {
-    //             idList.push(newId)
-    //           }
-    //         }
-    //       })
-    //     }
-    //     return idList
-    //   } catch (err) {
-    //     console.log('Wrong format. Make sure it includes AB#<ticket_number>')
-    //   }
-    // }
+    const getRejectedWorkItemsFromText = (text) => {
+        try {
+            const idList = [];
+            const matches = [];
+            const rejected = text.match(/(?<=Rejected:).*(AB#[(0-9)]+)/g);
+            if (rejected) {
+                rejected.forEach(r => {
+                    const rejectedMatches = r.match(/AB#[(0-9)]*/g);
+                    if (rejectedMatches) {
+                        rejectedMatches.forEach(r => {
+                            matches.push(r);
+                        });
+                    }
+                });
+            }
+            if (matches) {
+                matches.forEach(id => {
+                    if (id && id.match(/[AB#]+/g)) {
+                        const newId = id.replace(/[AB#]*/g, '');
+                        if (newId) {
+                            idList.push(newId);
+                        }
+                    }
+                });
+            }
+            return idList;
+        }
+        catch (err) {
+            console.log('Could not find any rejected work items');
+        }
+    };
     const getWorkItemIdFromBranchName = (branchName) => {
         try {
             const match = branchName.match(/AB#[(0-9)]*/g);
@@ -153,7 +157,7 @@ function useAzureBoards(env, context) {
         return connection.getWorkItemTrackingApi();
     });
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
         console.log('Updating work item: ' + workItemId);
         const client = yield getApiClient();
         const workItem = yield client.getWorkItem(workItemId);
@@ -202,16 +206,17 @@ function useAzureBoards(env, context) {
                     switch (env.action) {
                         case 'submitted':
                         case 'edited':
-                            console.log('context.payload.review.state: ');
-                            console.log((_c = (_b = context.payload) === null || _b === void 0 ? void 0 : _b.review) === null || _c === void 0 ? void 0 : _c.state);
+                            console.log('context.payload.review: ');
+                            console.log((_b = context.payload) === null || _b === void 0 ? void 0 : _b.review);
                             if (env.currentBranchName == env.stagingBranchName) {
-                                if (((_e = (_d = context.payload) === null || _d === void 0 ? void 0 : _d.review) === null || _e === void 0 ? void 0 : _e.state) == 'changes_requested') {
+                                if (((_d = (_c = context.payload) === null || _c === void 0 ? void 0 : _c.review) === null || _d === void 0 ? void 0 : _d.state) == 'changes_requested') {
                                     //console.log(
                                     // `Moving work item ${workItemId} to ${env.rejectedState}`
                                     //)
+                                    //getRejectedWorkItemsFromText()
                                     //await setWorkItemState(workItemId, env.rejectedState)
                                 }
-                                else if (((_g = (_f = context.payload) === null || _f === void 0 ? void 0 : _f.review) === null || _g === void 0 ? void 0 : _g.state) == 'approved') {
+                                else if (((_f = (_e = context.payload) === null || _e === void 0 ? void 0 : _e.review) === null || _f === void 0 ? void 0 : _f.state) == 'approved') {
                                     // console.log(
                                     //   `Moving work item ${workItemId} to ${env.approvedState}`
                                     // )
@@ -219,11 +224,11 @@ function useAzureBoards(env, context) {
                                 }
                             }
                             else {
-                                if (((_j = (_h = context.payload) === null || _h === void 0 ? void 0 : _h.review) === null || _j === void 0 ? void 0 : _j.state) == 'changes_requested') {
+                                if (((_h = (_g = context.payload) === null || _g === void 0 ? void 0 : _g.review) === null || _h === void 0 ? void 0 : _h.state) == 'changes_requested') {
                                     console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
                                     yield setWorkItemState(workItemId, env.inProgressState);
                                 }
-                                else if (((_l = (_k = context.payload) === null || _k === void 0 ? void 0 : _k.review) === null || _l === void 0 ? void 0 : _l.state) == 'approved') {
+                                else if (((_k = (_j = context.payload) === null || _j === void 0 ? void 0 : _j.review) === null || _k === void 0 ? void 0 : _k.state) == 'approved') {
                                     console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
                                     yield setWorkItemState(workItemId, env.inReviewState);
                                 }
@@ -269,8 +274,8 @@ function useAzureBoards(env, context) {
         }
     });
     const updateIfMergingPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _m, _o;
-        const headCommitMessage = (_o = (_m = context.payload) === null || _m === void 0 ? void 0 : _m.head_commit) === null || _o === void 0 ? void 0 : _o.message;
+        var _l, _m;
+        const headCommitMessage = (_m = (_l = context.payload) === null || _l === void 0 ? void 0 : _l.head_commit) === null || _m === void 0 ? void 0 : _m.message;
         if (headCommitMessage) {
             if (headCommitMessage.includes('Merge pull request')) {
                 console.log(`Moving work item ${workItemId} to ${state}`);
@@ -281,8 +286,8 @@ function useAzureBoards(env, context) {
         return false;
     });
     const updateIfCommitingToPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _p, _q;
-        const headCommitMessage = (_q = (_p = context.payload) === null || _p === void 0 ? void 0 : _p.head_commit) === null || _q === void 0 ? void 0 : _q.message;
+        var _o, _p;
+        const headCommitMessage = (_p = (_o = context.payload) === null || _o === void 0 ? void 0 : _o.head_commit) === null || _p === void 0 ? void 0 : _p.message;
         if (headCommitMessage) {
             if (headCommitMessage.includes('pull request')) {
                 console.log(`Moving work item ${workItemId} to ${state}`);
