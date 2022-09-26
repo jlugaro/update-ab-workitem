@@ -162,6 +162,8 @@ function getValuesFromPayload(payload: any) {
     process.env.in_review_state,
     process.env.merged_state,
     process.env.staging_state,
+    process.env.approved_state,
+    process.env.rejected_state,
     process.env.closed_state
   )
 }

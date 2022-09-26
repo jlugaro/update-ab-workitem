@@ -45,7 +45,7 @@ function useAzureBoards(env, context) {
     const getWorkItemsFromText = (text) => {
         try {
             const idList = [];
-            const matches = text.match(/[AB#(0-9)]*/g);
+            const matches = text.match(/AB#[(0-9)]*/g);
             if (matches) {
                 matches.forEach(id => {
                     if (id && id.match(/[AB#]+/g)) {
@@ -62,9 +62,36 @@ function useAzureBoards(env, context) {
             console.log('Wrong format. Make sure it includes AB#<ticket_number>');
         }
     };
+    // const getRejectedWorkItemsFromText = (text: string) => {
+    //   try {
+    //     const idList: string[] = []
+    //     const rejected = text.match(/(?<=Rejected:).*(AB#[(0-9)]+)/g)
+    //     const matches: string[] = [];
+    //     if (rejected) {
+    //       rejected.forEach(r => {
+    //         const match = r.match(/AB#[(0-9)]*/g)
+    //         if (match)
+    //           matches.push(match);
+    //       })
+    //     }
+    //     if (matches) {
+    //       matches.forEach(id => {
+    //         if (id && id.match(/[AB#]+/g)) {
+    //           const newId = id.replace(/[AB#]*/g, '')
+    //           if (newId) {
+    //             idList.push(newId)
+    //           }
+    //         }
+    //       })
+    //     }
+    //     return idList
+    //   } catch (err) {
+    //     console.log('Wrong format. Make sure it includes AB#<ticket_number>')
+    //   }
+    // }
     const getWorkItemIdFromBranchName = (branchName) => {
         try {
-            const match = branchName.match(/[AB#(0-9)]+/g);
+            const match = branchName.match(/AB#[(0-9)]*/g);
             if (match) {
                 const id = match[0].replace(/[AB#]*/g, '');
                 console.log('Found match on branch name: ' + branchName);
@@ -126,7 +153,7 @@ function useAzureBoards(env, context) {
         return connection.getWorkItemTrackingApi();
     });
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
         console.log('Updating work item: ' + workItemId);
         const client = yield getApiClient();
         const workItem = yield client.getWorkItem(workItemId);
@@ -154,8 +181,8 @@ function useAzureBoards(env, context) {
                                     yield setWorkItemState(workItemId, env.mergedState);
                                     break;
                                 case env.stagingBranchName:
-                                    console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
-                                    yield setWorkItemState(workItemId, env.stagingState);
+                                    console.log(`Moving work item ${workItemId} to ${env.approvedState}`);
+                                    yield setWorkItemState(workItemId, env.approvedState);
                                     break;
                                 case env.mainBranchName:
                                     console.log(`Moving work item ${workItemId} to ${env.closedState}`);
@@ -177,13 +204,29 @@ function useAzureBoards(env, context) {
                         case 'edited':
                             console.log('context.payload.review.state: ');
                             console.log((_c = (_b = context.payload) === null || _b === void 0 ? void 0 : _b.review) === null || _c === void 0 ? void 0 : _c.state);
-                            if (((_e = (_d = context.payload) === null || _d === void 0 ? void 0 : _d.review) === null || _e === void 0 ? void 0 : _e.state) == 'changes_requested') {
-                                console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
-                                yield setWorkItemState(workItemId, env.inProgressState);
+                            if (env.currentBranchName == env.stagingBranchName) {
+                                if (((_e = (_d = context.payload) === null || _d === void 0 ? void 0 : _d.review) === null || _e === void 0 ? void 0 : _e.state) == 'changes_requested') {
+                                    //console.log(
+                                    // `Moving work item ${workItemId} to ${env.rejectedState}`
+                                    //)
+                                    //await setWorkItemState(workItemId, env.rejectedState)
+                                }
+                                else if (((_g = (_f = context.payload) === null || _f === void 0 ? void 0 : _f.review) === null || _g === void 0 ? void 0 : _g.state) == 'approved') {
+                                    // console.log(
+                                    //   `Moving work item ${workItemId} to ${env.approvedState}`
+                                    // )
+                                    // await setWorkItemState(workItemId, env.approvedState)
+                                }
                             }
-                            else if (((_g = (_f = context.payload) === null || _f === void 0 ? void 0 : _f.review) === null || _g === void 0 ? void 0 : _g.state) == 'approved') {
-                                console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
-                                yield setWorkItemState(workItemId, env.inReviewState);
+                            else {
+                                if (((_j = (_h = context.payload) === null || _h === void 0 ? void 0 : _h.review) === null || _j === void 0 ? void 0 : _j.state) == 'changes_requested') {
+                                    console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
+                                    yield setWorkItemState(workItemId, env.inProgressState);
+                                }
+                                else if (((_l = (_k = context.payload) === null || _k === void 0 ? void 0 : _k.review) === null || _l === void 0 ? void 0 : _l.state) == 'approved') {
+                                    console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
+                                    yield setWorkItemState(workItemId, env.inReviewState);
+                                }
                             }
                             break;
                         case 'closed':
@@ -226,8 +269,8 @@ function useAzureBoards(env, context) {
         }
     });
     const updateIfMergingPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _h, _j;
-        const headCommitMessage = (_j = (_h = context.payload) === null || _h === void 0 ? void 0 : _h.head_commit) === null || _j === void 0 ? void 0 : _j.message;
+        var _m, _o;
+        const headCommitMessage = (_o = (_m = context.payload) === null || _m === void 0 ? void 0 : _m.head_commit) === null || _o === void 0 ? void 0 : _o.message;
         if (headCommitMessage) {
             if (headCommitMessage.includes('Merge pull request')) {
                 console.log(`Moving work item ${workItemId} to ${state}`);
@@ -238,8 +281,8 @@ function useAzureBoards(env, context) {
         return false;
     });
     const updateIfCommitingToPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _k, _l;
-        const headCommitMessage = (_l = (_k = context.payload) === null || _k === void 0 ? void 0 : _k.head_commit) === null || _l === void 0 ? void 0 : _l.message;
+        var _p, _q;
+        const headCommitMessage = (_q = (_p = context.payload) === null || _p === void 0 ? void 0 : _p.head_commit) === null || _q === void 0 ? void 0 : _q.message;
         if (headCommitMessage) {
             if (headCommitMessage.includes('pull request')) {
                 console.log(`Moving work item ${workItemId} to ${state}`);
@@ -566,7 +609,7 @@ function getValuesFromPayload(payload) {
             branchName = process.env.main_branch_name;
         }
     }
-    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, branchName, process.env.dev_branch_name, process.env.staging_branch_name, process.env.main_branch_name, process.env.in_progress_state, process.env.in_review_state, process.env.merged_state, process.env.staging_state, process.env.closed_state);
+    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, branchName, process.env.dev_branch_name, process.env.staging_branch_name, process.env.main_branch_name, process.env.in_progress_state, process.env.in_review_state, process.env.merged_state, process.env.staging_state, process.env.approved_state, process.env.rejected_state, process.env.closed_state);
 }
 run();
 
@@ -581,7 +624,7 @@ run();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.actionEnvModel = void 0;
 class actionEnvModel {
-    constructor(action, githubEventName, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, currentBranchName, devBranchName, stagingBranchName, mainBranchName, inProgressState, inReviewState, mergedState, stagingState, closedState) {
+    constructor(action, githubEventName, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, currentBranchName, devBranchName, stagingBranchName, mainBranchName, inProgressState, inReviewState, mergedState, stagingState, approvedState, rejectedState, closedState) {
         this.action = action !== null && action !== void 0 ? action : '';
         this.githubEventName = githubEventName !== null && githubEventName !== void 0 ? githubEventName : '';
         this.githubPAT = githubPAT !== null && githubPAT !== void 0 ? githubPAT : '';
@@ -600,6 +643,8 @@ class actionEnvModel {
         this.inReviewState = inReviewState !== null && inReviewState !== void 0 ? inReviewState : '';
         this.mergedState = mergedState !== null && mergedState !== void 0 ? mergedState : '';
         this.stagingState = stagingState !== null && stagingState !== void 0 ? stagingState : '';
+        this.approvedState = approvedState !== null && approvedState !== void 0 ? approvedState : '';
+        this.rejectedState = rejectedState !== null && rejectedState !== void 0 ? rejectedState : '';
         this.closedState = closedState !== null && closedState !== void 0 ? closedState : '';
     }
 }

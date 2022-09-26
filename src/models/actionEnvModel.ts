@@ -17,6 +17,8 @@ export class actionEnvModel {
   inReviewState: string
   mergedState: string
   stagingState: string
+  approvedState: string
+  rejectedState: string
   closedState: string
 
   constructor(
@@ -38,6 +40,8 @@ export class actionEnvModel {
     inReviewState: string | undefined,
     mergedState: string | undefined,
     stagingState: string | undefined,
+    approvedState: string | undefined,
+    rejectedState: string | undefined,
     closedState: string | undefined
   ) {
     this.action = action ?? ''
@@ -58,6 +62,8 @@ export class actionEnvModel {
     this.inReviewState = inReviewState ?? ''
     this.mergedState = mergedState ?? ''
     this.stagingState = stagingState ?? ''
+    this.approvedState = approvedState ?? ''
+    this.rejectedState = rejectedState ?? ''
     this.closedState = closedState ?? ''
   }
 }

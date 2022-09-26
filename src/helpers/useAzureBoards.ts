@@ -5,7 +5,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
   const getWorkItemsFromText = (text: string) => {
     try {
       const idList: string[] = []
-      const matches = text.match(/[AB#(0-9)]*/g)
+      const matches = text.match(/AB#[(0-9)]*/g)
 
       if (matches) {
         matches.forEach(id => {
@@ -23,9 +23,40 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
     }
   }
 
+  // const getRejectedWorkItemsFromText = (text: string) => {
+  //   try {
+  //     const idList: string[] = []
+  //     const rejected = text.match(/(?<=Rejected:).*(AB#[(0-9)]+)/g)
+
+  //     const matches: string[] = [];
+
+  //     if (rejected) {
+  //       rejected.forEach(r => {
+  //         const match = r.match(/AB#[(0-9)]*/g)
+  //         if (match)
+  //           matches.push(match);
+  //       })
+  //     }
+
+  //     if (matches) {
+  //       matches.forEach(id => {
+  //         if (id && id.match(/[AB#]+/g)) {
+  //           const newId = id.replace(/[AB#]*/g, '')
+  //           if (newId) {
+  //             idList.push(newId)
+  //           }
+  //         }
+  //       })
+  //     }
+  //     return idList
+  //   } catch (err) {
+  //     console.log('Wrong format. Make sure it includes AB#<ticket_number>')
+  //   }
+  // }
+
   const getWorkItemIdFromBranchName = (branchName: string) => {
     try {
-      const match: RegExpMatchArray | null = branchName.match(/[AB#(0-9)]+/g)
+      const match: RegExpMatchArray | null = branchName.match(/AB#[(0-9)]*/g)
 
       if (match) {
         const id = match[0].replace(/[AB#]*/g, '')
@@ -124,6 +155,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
         case 'pull_request':
           console.log(`updateWorkItem: pull_request into ${targetBranch}`)
           console.log(`action: ${env.action}`)
+
           switch (env.action) {
             case 'opened':
             case 'edited':
@@ -142,6 +174,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
                 )
               }
               break
+
             case 'closed':
               switch (targetBranch) {
                 case env.devBranchName:
@@ -152,9 +185,9 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
                   break
                 case env.stagingBranchName:
                   console.log(
-                    `Moving work item ${workItemId} to ${env.stagingState}`
+                    `Moving work item ${workItemId} to ${env.approvedState}`
                   )
-                  await setWorkItemState(workItemId, env.stagingState)
+                  await setWorkItemState(workItemId, env.approvedState)
                   break
                 case env.mainBranchName:
                   console.log(
@@ -178,16 +211,31 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
             case 'edited':
               console.log('context.payload.review.state: ')
               console.log(context.payload?.review?.state)
-              if (context.payload?.review?.state == 'changes_requested') {
-                console.log(
-                  `Moving work item ${workItemId} to ${env.inProgressState}`
-                )
-                await setWorkItemState(workItemId, env.inProgressState)
-              } else if (context.payload?.review?.state == 'approved') {
-                console.log(
-                  `Moving work item ${workItemId} to ${env.inReviewState}`
-                )
-                await setWorkItemState(workItemId, env.inReviewState)
+
+              if (env.currentBranchName == env.stagingBranchName) {
+                if (context.payload?.review?.state == 'changes_requested') {
+                  //console.log(
+                  // `Moving work item ${workItemId} to ${env.rejectedState}`
+                  //)
+                  //await setWorkItemState(workItemId, env.rejectedState)
+                } else if (context.payload?.review?.state == 'approved') {
+                  // console.log(
+                  //   `Moving work item ${workItemId} to ${env.approvedState}`
+                  // )
+                  // await setWorkItemState(workItemId, env.approvedState)
+                }
+              } else {
+                if (context.payload?.review?.state == 'changes_requested') {
+                  console.log(
+                    `Moving work item ${workItemId} to ${env.inProgressState}`
+                  )
+                  await setWorkItemState(workItemId, env.inProgressState)
+                } else if (context.payload?.review?.state == 'approved') {
+                  console.log(
+                    `Moving work item ${workItemId} to ${env.inReviewState}`
+                  )
+                  await setWorkItemState(workItemId, env.inReviewState)
+                }
               }
               break
             case 'closed':
