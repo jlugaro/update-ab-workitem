@@ -62,37 +62,6 @@ function useAzureBoards(env, context) {
             console.log('Wrong format. Make sure it includes AB#<ticket_number>');
         }
     };
-    const getRejectedWorkItemsFromText = (text) => {
-        try {
-            const idList = [];
-            const matches = [];
-            const rejected = text.match(/(?<=Rejected:).*(AB#[(0-9)]+)/g);
-            if (rejected) {
-                rejected.forEach(r => {
-                    const rejectedMatches = r.match(/AB#[(0-9)]*/g);
-                    if (rejectedMatches) {
-                        rejectedMatches.forEach(r => {
-                            matches.push(r);
-                        });
-                    }
-                });
-            }
-            if (matches) {
-                matches.forEach(id => {
-                    if (id && id.match(/[AB#]+/g)) {
-                        const newId = id.replace(/[AB#]*/g, '');
-                        if (newId) {
-                            idList.push(newId);
-                        }
-                    }
-                });
-            }
-            return idList;
-        }
-        catch (err) {
-            console.log('Could not find any rejected work items');
-        }
-    };
     const getWorkItemIdFromBranchName = (branchName) => {
         try {
             const match = branchName.match(/AB#[(0-9)]*/g);
@@ -173,14 +142,6 @@ function useAzureBoards(env, context) {
                             if (targetBranch == env.devBranchName) {
                                 console.log(`Development Workflow: Moving work item ${workItemId} to ${env.inReviewState}`);
                                 yield setWorkItemState(workItemId, env.inReviewState);
-                                // console.log('created by: ')
-                                // console.log(workItem.fields['System.CreatedBy'])
-                                // if (workItem.fields['System.CreatedBy']) {
-                                //   await setWorkItemAssignedTo(
-                                //     workItemId,
-                                //     workItem.fields['System.CreatedBy']
-                                //   )
-                                // }
                             }
                             break;
                         case 'closed':
@@ -190,10 +151,6 @@ function useAzureBoards(env, context) {
                                     yield setWorkItemState(workItemId, env.mergedState);
                                     break;
                                 case env.stagingBranchName:
-                                    // console.log(
-                                    //   `Moving work item ${workItemId} to ${env.approvedState}`
-                                    // )
-                                    // await setWorkItemState(workItemId, env.approvedState)
                                     console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
                                     yield setWorkItemState(workItemId, env.stagingState);
                                     console.log('created by: ');
@@ -203,10 +160,6 @@ function useAzureBoards(env, context) {
                                     }
                                     break;
                                 case env.mainBranchName:
-                                    // console.log(
-                                    //   `Moving work item ${workItemId} to ${env.closedState}`
-                                    // )
-                                    // await setWorkItemState(workItemId, env.closedState)
                                     break;
                                 default:
                                     break;
@@ -222,21 +175,6 @@ function useAzureBoards(env, context) {
                     switch (env.action) {
                         case 'submitted':
                         case 'edited':
-                            // console.log('context.payload.review: ')
-                            // console.log(context.payload?.review)
-                            // if (env.currentBranchName == env.devBranchName) {
-                            //   if (context.payload?.review?.state == 'changes_requested') {
-                            //     console.log(
-                            //       `Moving work item ${workItemId} to ${env.inProgressState}`
-                            //     )
-                            //     await setWorkItemState(workItemId, env.inProgressState)
-                            //   } else if (context.payload?.review?.state == 'approved') {
-                            //     console.log(
-                            //       `Moving work item ${workItemId} to ${env.inReviewState}`
-                            //     )
-                            //     await setWorkItemState(workItemId, env.inReviewState)
-                            //   }
-                            // }
                             break;
                         default:
                             break;
