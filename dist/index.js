@@ -157,7 +157,7 @@ function useAzureBoards(env, context) {
         return connection.getWorkItemTrackingApi();
     });
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c, _d, _e, _f;
+        var _a;
         console.log('Updating work item: ' + workItemId);
         const client = yield getApiClient();
         const workItem = yield client.getWorkItem(workItemId);
@@ -222,18 +222,21 @@ function useAzureBoards(env, context) {
                     switch (env.action) {
                         case 'submitted':
                         case 'edited':
-                            console.log('context.payload.review: ');
-                            console.log((_b = context.payload) === null || _b === void 0 ? void 0 : _b.review);
-                            if (env.currentBranchName == env.devBranchName) {
-                                if (((_d = (_c = context.payload) === null || _c === void 0 ? void 0 : _c.review) === null || _d === void 0 ? void 0 : _d.state) == 'changes_requested') {
-                                    console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
-                                    yield setWorkItemState(workItemId, env.inProgressState);
-                                }
-                                else if (((_f = (_e = context.payload) === null || _e === void 0 ? void 0 : _e.review) === null || _f === void 0 ? void 0 : _f.state) == 'approved') {
-                                    console.log(`Moving work item ${workItemId} to ${env.inReviewState}`);
-                                    yield setWorkItemState(workItemId, env.inReviewState);
-                                }
-                            }
+                            // console.log('context.payload.review: ')
+                            // console.log(context.payload?.review)
+                            // if (env.currentBranchName == env.devBranchName) {
+                            //   if (context.payload?.review?.state == 'changes_requested') {
+                            //     console.log(
+                            //       `Moving work item ${workItemId} to ${env.inProgressState}`
+                            //     )
+                            //     await setWorkItemState(workItemId, env.inProgressState)
+                            //   } else if (context.payload?.review?.state == 'approved') {
+                            //     console.log(
+                            //       `Moving work item ${workItemId} to ${env.inReviewState}`
+                            //     )
+                            //     await setWorkItemState(workItemId, env.inReviewState)
+                            //   }
+                            // }
                             break;
                         default:
                             break;
@@ -263,7 +266,10 @@ function useAzureBoards(env, context) {
                             break;
                         case env.mainBranchName:
                             console.log(`Moving work item ${workItemId} to ${env.closedState}`);
-                            yield setWorkItemState(workItemId, env.closedState);
+                            if (workItem &&
+                                workItem.fields['System.State'] == env.approvedState) {
+                                yield setWorkItemState(workItemId, env.closedState);
+                            }
                             break;
                         default:
                             break;
@@ -278,8 +284,8 @@ function useAzureBoards(env, context) {
         }
     });
     const updateIfMergingPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _g, _h;
-        const headCommitMessage = (_h = (_g = context.payload) === null || _g === void 0 ? void 0 : _g.head_commit) === null || _h === void 0 ? void 0 : _h.message;
+        var _b, _c;
+        const headCommitMessage = (_c = (_b = context.payload) === null || _b === void 0 ? void 0 : _b.head_commit) === null || _c === void 0 ? void 0 : _c.message;
         if (headCommitMessage) {
             if (headCommitMessage.includes('Merge pull request')) {
                 console.log(`Moving work item ${workItemId} to ${state}`);
@@ -290,8 +296,8 @@ function useAzureBoards(env, context) {
         return false;
     });
     const updateIfCommitingToPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _j, _k;
-        const headCommitMessage = (_k = (_j = context.payload) === null || _j === void 0 ? void 0 : _j.head_commit) === null || _k === void 0 ? void 0 : _k.message;
+        var _d, _e;
+        const headCommitMessage = (_e = (_d = context.payload) === null || _d === void 0 ? void 0 : _d.head_commit) === null || _e === void 0 ? void 0 : _e.message;
         if (headCommitMessage) {
             if (headCommitMessage.includes('pull request')) {
                 console.log(`Moving work item ${workItemId} to ${state}`);

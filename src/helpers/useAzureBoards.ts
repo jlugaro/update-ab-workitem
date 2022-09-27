@@ -291,7 +291,13 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
               console.log(
                 `Moving work item ${workItemId} to ${env.closedState}`
               )
-              await setWorkItemState(workItemId, env.closedState)
+
+              if (
+                workItem &&
+                workItem.fields['System.State'] == env.approvedState
+              ) {
+                await setWorkItemState(workItemId, env.closedState)
+              }
               break
             default:
               break
