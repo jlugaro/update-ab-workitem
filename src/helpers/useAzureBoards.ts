@@ -227,21 +227,21 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           switch (env.action) {
             case 'submitted':
             case 'edited':
-              console.log('context.payload.review: ')
-              console.log(context.payload?.review)
-              if (env.currentBranchName == env.devBranchName) {
-                if (context.payload?.review?.state == 'changes_requested') {
-                  console.log(
-                    `Moving work item ${workItemId} to ${env.inProgressState}`
-                  )
-                  await setWorkItemState(workItemId, env.inProgressState)
-                } else if (context.payload?.review?.state == 'approved') {
-                  console.log(
-                    `Moving work item ${workItemId} to ${env.inReviewState}`
-                  )
-                  await setWorkItemState(workItemId, env.inReviewState)
-                }
-              }
+              // console.log('context.payload.review: ')
+              // console.log(context.payload?.review)
+              // if (env.currentBranchName == env.devBranchName) {
+              //   if (context.payload?.review?.state == 'changes_requested') {
+              //     console.log(
+              //       `Moving work item ${workItemId} to ${env.inProgressState}`
+              //     )
+              //     await setWorkItemState(workItemId, env.inProgressState)
+              //   } else if (context.payload?.review?.state == 'approved') {
+              //     console.log(
+              //       `Moving work item ${workItemId} to ${env.inReviewState}`
+              //     )
+              //     await setWorkItemState(workItemId, env.inReviewState)
+              //   }
+              // }
               break
             default:
               break
