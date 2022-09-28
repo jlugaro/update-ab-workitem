@@ -1,8 +1,8 @@
 import * as core from '@actions/core'
-import {actionEnvModel} from '../models/actionEnvModel'
+import {configurationModel} from '../models/configurationModel'
 import fetch from 'node-fetch'
 
-export function useGithub(env: actionEnvModel, context: any) {
+export function useGithub(env: configurationModel, context: any) {
   const getRequestHeaders = (token: string) => {
     const h = new Headers()
     const auth = 'token ' + token

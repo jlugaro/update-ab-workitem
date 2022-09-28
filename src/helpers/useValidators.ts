@@ -1,6 +1,6 @@
-import {actionEnvModel} from '../models/actionEnvModel'
+import {configurationModel} from '../models/configurationModel'
 
-export function useValidators(env: actionEnvModel) {
+export function useValidators(env: configurationModel) {
   const isPullRequestEvent = () => {
     return env.githubEventName?.toLowerCase() == 'pull_request'
   }

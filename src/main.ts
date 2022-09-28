@@ -1,9 +1,8 @@
-import * as core from '@actions/core'
 import * as fetch from 'node-fetch'
 import * as github from '@actions/github'
 import {useGithub} from './helpers/useGithub'
 import {useAzureBoards} from './helpers/useAzureBoards'
-import {actionEnvModel} from './models/actionEnvModel'
+import {configurationModel} from './models/configurationModel'
 import {useValidators} from './helpers/useValidators'
 
 const version = '1.0.0'
@@ -14,13 +13,7 @@ async function run(): Promise<void> {
 
   const vm = getValuesFromPayload(github.context.payload)
 
-  const {
-    isPullRequestEvent,
-    isBranchEvent,
-    isReviewEvent,
-    isBotEvent,
-    isProtectedBranch
-  } = useValidators(vm)
+  const {isPullRequestEvent, isBranchEvent, isReviewEvent, isBotEvent} = useValidators(vm)
 
   const {getPullRequest, getCommitsFromPullRequest} = useGithub(
     vm,
@@ -143,7 +136,7 @@ function getValuesFromPayload(payload: any) {
     }
   }
 
-  return new actionEnvModel(
+  return new configurationModel(
     payload.action,
     process.env.GITHUB_EVENT_NAME,
     process.env.gh_token,

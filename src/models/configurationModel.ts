@@ -1,4 +1,5 @@
-export class actionEnvModel {
+/* eslint-disable filenames/match-regex */
+export class configurationModel {
   action: string
   githubEventName: string
   githubPAT: string

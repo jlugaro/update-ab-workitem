@@ -1,7 +1,7 @@
 import * as azureDevOpsHandler from 'azure-devops-node-api'
-import {actionEnvModel} from '../models/actionEnvModel'
+import {configurationModel} from '../models/configurationModel'
 
-export function useAzureBoards(env: actionEnvModel, context: any) {
+export function useAzureBoards(env: configurationModel, context: any) {
   const getWorkItemsFromText = (text: string) => {
     try {
       const idList: string[] = []
@@ -137,6 +137,8 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
               break
 
             case 'closed':
+              console.log('context:')
+              console.log(context);
               switch (targetBranch) {
                 case env.devBranchName:
                   console.log(
@@ -171,11 +173,10 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
           }
           break
         case 'pull_request_review':
-          console.log('updateWorkItem: Is pull_request_review')
-          console.log(`pr review action: ${env.action}`)
           switch (env.action) {
             case 'submitted':
             case 'edited':
+              //Any action regarding pull request reviews goes here...
               break
             default:
               break
@@ -225,13 +226,7 @@ export function useAzureBoards(env: actionEnvModel, context: any) {
               console.log(
                 `Moving work item ${workItemId} to ${env.closedState}`
               )
-
-              if (
-                workItem &&
-                workItem.fields['System.State'] == env.approvedState
-              ) {
                 await setWorkItemState(workItemId, env.closedState)
-              }
               break
             default:
               break

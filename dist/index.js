@@ -145,6 +145,8 @@ function useAzureBoards(env, context) {
                             }
                             break;
                         case 'closed':
+                            console.log('context:');
+                            console.log(context);
                             switch (targetBranch) {
                                 case env.devBranchName:
                                     console.log(`Development Workflow: Moving work item ${workItemId} to ${env.mergedState}`);
@@ -170,11 +172,10 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'pull_request_review':
-                    console.log('updateWorkItem: Is pull_request_review');
-                    console.log(`pr review action: ${env.action}`);
                     switch (env.action) {
                         case 'submitted':
                         case 'edited':
+                            //Any action regarding pull request reviews goes here...
                             break;
                         default:
                             break;
@@ -204,10 +205,7 @@ function useAzureBoards(env, context) {
                             break;
                         case env.mainBranchName:
                             console.log(`Moving work item ${workItemId} to ${env.closedState}`);
-                            if (workItem &&
-                                workItem.fields['System.State'] == env.approvedState) {
-                                yield setWorkItemState(workItemId, env.closedState);
-                            }
+                            yield setWorkItemState(workItemId, env.closedState);
                             break;
                         default:
                             break;
@@ -457,7 +455,7 @@ const fetch = __importStar(__nccwpck_require__(4429));
 const github = __importStar(__nccwpck_require__(5438));
 const useGithub_1 = __nccwpck_require__(6435);
 const useAzureBoards_1 = __nccwpck_require__(973);
-const actionEnvModel_1 = __nccwpck_require__(1634);
+const configurationModel_1 = __nccwpck_require__(3221);
 const useValidators_1 = __nccwpck_require__(9218);
 const version = '1.0.0';
 global.Headers = fetch.Headers;
@@ -466,7 +464,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('VERSION ' + version);
         const vm = getValuesFromPayload(github.context.payload);
-        const { isPullRequestEvent, isBranchEvent, isReviewEvent, isBotEvent, isProtectedBranch } = (0, useValidators_1.useValidators)(vm);
+        const { isPullRequestEvent, isBranchEvent, isReviewEvent, isBotEvent } = (0, useValidators_1.useValidators)(vm);
         const { getPullRequest, getCommitsFromPullRequest } = (0, useGithub_1.useGithub)(vm, github.context);
         const { getWorkItemIdsFromPullRequest, getWorkItemIdFromBranchName, getWorkItemIdsFromContext, getWorkItemIdsFromCommits, updateWorkItem } = (0, useAzureBoards_1.useAzureBoards)(vm, github.context);
         const updateWorkItemsFromPullRequest = (pullRequest) => __awaiter(this, void 0, void 0, function* () {
@@ -562,21 +560,22 @@ function getValuesFromPayload(payload) {
             branchName = process.env.main_branch_name;
         }
     }
-    return new actionEnvModel_1.actionEnvModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, branchName, process.env.dev_branch_name, process.env.staging_branch_name, process.env.main_branch_name, process.env.in_progress_state, process.env.in_review_state, process.env.merged_state, process.env.staging_state, process.env.approved_state, process.env.rejected_state, process.env.closed_state);
+    return new configurationModel_1.configurationModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, branchName, process.env.dev_branch_name, process.env.staging_branch_name, process.env.main_branch_name, process.env.in_progress_state, process.env.in_review_state, process.env.merged_state, process.env.staging_state, process.env.approved_state, process.env.rejected_state, process.env.closed_state);
 }
 run();
 
 
 /***/ }),
 
-/***/ 1634:
+/***/ 3221:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.actionEnvModel = void 0;
-class actionEnvModel {
+exports.configurationModel = void 0;
+/* eslint-disable filenames/match-regex */
+class configurationModel {
     constructor(action, githubEventName, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, currentBranchName, devBranchName, stagingBranchName, mainBranchName, inProgressState, inReviewState, mergedState, stagingState, approvedState, rejectedState, closedState) {
         this.action = action !== null && action !== void 0 ? action : '';
         this.githubEventName = githubEventName !== null && githubEventName !== void 0 ? githubEventName : '';
@@ -601,7 +600,7 @@ class actionEnvModel {
         this.closedState = closedState !== null && closedState !== void 0 ? closedState : '';
     }
 }
-exports.actionEnvModel = actionEnvModel;
+exports.configurationModel = configurationModel;
 
 
 /***/ }),
