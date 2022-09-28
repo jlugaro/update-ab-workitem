@@ -137,35 +137,35 @@ export function useAzureBoards(env: configurationModel, context: any) {
               break
 
             case 'closed':
-              console.log('context:')
-              console.log(context);
-              switch (targetBranch) {
-                case env.devBranchName:
-                  console.log(
-                    `Development Workflow: Moving work item ${workItemId} to ${env.mergedState}`
-                  )
-                  await setWorkItemState(workItemId, env.mergedState)
-                  break
-                case env.stagingBranchName:
-                  console.log(
-                    `Moving work item ${workItemId} to ${env.stagingState}`
-                  )
-                  await setWorkItemState(workItemId, env.stagingState)
-
-                  console.log('created by: ')
-                  console.log(workItem.fields['System.CreatedBy'])
-
-                  if (workItem.fields['System.CreatedBy']) {
-                    await setWorkItemAssignedTo(
-                      workItemId,
-                      workItem.fields['System.CreatedBy']
+              if (context.payload.pull_request.merged == true) {
+                switch (targetBranch) {
+                  case env.devBranchName:
+                    console.log(
+                      `Development Workflow: Moving work item ${workItemId} to ${env.mergedState}`
                     )
-                  }
-                  break
-                case env.mainBranchName:
-                  break
-                default:
-                  break
+                    await setWorkItemState(workItemId, env.mergedState)
+                    break
+                  case env.stagingBranchName:
+                    console.log(
+                      `Moving work item ${workItemId} to ${env.stagingState}`
+                    )
+                    await setWorkItemState(workItemId, env.stagingState)
+
+                    console.log('created by: ')
+                    console.log(workItem.fields['System.CreatedBy'])
+
+                    if (workItem.fields['System.CreatedBy']) {
+                      await setWorkItemAssignedTo(
+                        workItemId,
+                        workItem.fields['System.CreatedBy']
+                      )
+                    }
+                    break
+                  case env.mainBranchName:
+                    break
+                  default:
+                    break
+                }
               }
               break
             default:
