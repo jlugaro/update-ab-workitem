@@ -208,10 +208,12 @@ export function useAzureBoards(env: configurationModel, context: any) {
               }
               break
             case env.mainBranchName:
-              console.log(
-                `Moving work item ${workItemId} to ${env.closedState}`
-              )
+              if (canMoveToClosed(workItem)) {
+                console.log(
+                  `Moving work item ${workItemId} to ${env.closedState}`
+                )
                 await setWorkItemState(workItemId, env.closedState)
+              }
               break
             default:
               break
@@ -245,6 +247,12 @@ export function useAzureBoards(env: configurationModel, context: any) {
 
   const canMoveToStaging = (workItem: any) => {
     return workItem.fields['System.State'] == env.mergedState
+  }
+
+  const canMoveToClosed = (workItem: any) => {
+    return workItem.fields['System.State'] == env.stagingState ||
+      workItem.fields['System.State'] == env.approvedState ||
+      workItem.fields['System.State'] == env.rejectedState
   }
 
   const setWorkItemState = async (workItemId: string, state: string) => {

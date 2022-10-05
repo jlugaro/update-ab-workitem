@@ -200,8 +200,10 @@ function useAzureBoards(env, context) {
                             }
                             break;
                         case env.mainBranchName:
-                            console.log(`Moving work item ${workItemId} to ${env.closedState}`);
-                            yield setWorkItemState(workItemId, env.closedState);
+                            if (canMoveToClosed(workItem)) {
+                                console.log(`Moving work item ${workItemId} to ${env.closedState}`);
+                                yield setWorkItemState(workItemId, env.closedState);
+                            }
                             break;
                         default:
                             break;
@@ -232,6 +234,11 @@ function useAzureBoards(env, context) {
     };
     const canMoveToStaging = (workItem) => {
         return workItem.fields['System.State'] == env.mergedState;
+    };
+    const canMoveToClosed = (workItem) => {
+        return workItem.fields['System.State'] == env.stagingState ||
+            workItem.fields['System.State'] == env.approvedState ||
+            workItem.fields['System.State'] == env.rejectedState;
     };
     const setWorkItemState = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
         console.log('Updating work item: ' + workItemId);
