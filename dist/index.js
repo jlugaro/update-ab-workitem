@@ -216,13 +216,13 @@ function useAzureBoards(env, context) {
         }
     });
     const canMoveToInProgress = (workItem) => {
-        return workItem.fields['System.CreatedBy'] != env.inProgressState ||
-            workItem.fields['System.CreatedBy'] != env.inReviewState ||
-            workItem.fields['System.CreatedBy'] != env.mergedState ||
-            workItem.fields['System.CreatedBy'] != env.stagingBranchName ||
-            workItem.fields['System.CreatedBy'] != env.approvedState ||
-            workItem.fields['System.CreatedBy'] != env.rejectedState ||
-            workItem.fields['System.CreatedBy'] != env.closedState;
+        return workItem.fields['System.State'] != env.inProgressState &&
+            workItem.fields['System.State'] != env.inReviewState &&
+            workItem.fields['System.State'] != env.mergedState &&
+            workItem.fields['System.State'] != env.stagingBranchName &&
+            workItem.fields['System.State'] != env.approvedState &&
+            workItem.fields['System.State'] != env.rejectedState &&
+            workItem.fields['System.State'] != env.closedState;
     };
     const updateIfMergingPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
         var _b, _c;
