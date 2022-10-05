@@ -188,23 +188,12 @@ export function useAzureBoards(env: configurationModel, context: any) {
           )
           switch (env.currentBranchName) {
             case env.devBranchName:
-              if (
-                await updateIfMergingPullRequest(workItemId, env.mergedState)
-              ) {
-                break
-              } else if (
-                await updateIfCommitingToPullRequest(
-                  workItemId,
-                  env.inReviewState
+               if (canMoveToInProgress(workItem)) {
+                console.log(
+                  `Moving work item ${workItemId} to ${env.inProgressState}`
                 )
-              ) {
-                break
+                await setWorkItemState(workItemId, env.inProgressState)
               }
-
-              console.log(
-                `Moving work item ${workItemId} to ${env.inProgressState}`
-              )
-              await setWorkItemState(workItemId, env.inProgressState)
               break
             case env.stagingBranchName:
               console.log(
@@ -238,6 +227,16 @@ export function useAzureBoards(env: configurationModel, context: any) {
     } else {
       console.log(`Work item not found for the provided id: ${workItemId}`)
     }
+  }
+
+  const canMoveToInProgress = (workItem: any) => {
+    return workItem.fields['System.CreatedBy'] != env.inProgressState ||
+            workItem.fields['System.CreatedBy'] != env.inReviewState ||
+            workItem.fields['System.CreatedBy'] != env.mergedState ||
+            workItem.fields['System.CreatedBy'] != env.stagingBranchName ||
+            workItem.fields['System.CreatedBy'] != env.approvedState ||
+            workItem.fields['System.CreatedBy'] != env.rejectedState ||
+            workItem.fields['System.CreatedBy'] != env.closedState
   }
 
   const updateIfMergingPullRequest = async (

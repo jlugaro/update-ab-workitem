@@ -185,14 +185,10 @@ function useAzureBoards(env, context) {
                     console.log(`pushed to ${env.currentBranchName}. action: ${env.githubEventName}`);
                     switch (env.currentBranchName) {
                         case env.devBranchName:
-                            if (yield updateIfMergingPullRequest(workItemId, env.mergedState)) {
-                                break;
+                            if (canMoveToInProgress(workItem)) {
+                                console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
+                                yield setWorkItemState(workItemId, env.inProgressState);
                             }
-                            else if (yield updateIfCommitingToPullRequest(workItemId, env.inReviewState)) {
-                                break;
-                            }
-                            console.log(`Moving work item ${workItemId} to ${env.inProgressState}`);
-                            yield setWorkItemState(workItemId, env.inProgressState);
                             break;
                         case env.stagingBranchName:
                             console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
@@ -219,6 +215,15 @@ function useAzureBoards(env, context) {
             console.log(`Work item not found for the provided id: ${workItemId}`);
         }
     });
+    const canMoveToInProgress = (workItem) => {
+        return workItem.fields['System.CreatedBy'] != env.inProgressState ||
+            workItem.fields['System.CreatedBy'] != env.inReviewState ||
+            workItem.fields['System.CreatedBy'] != env.mergedState ||
+            workItem.fields['System.CreatedBy'] != env.stagingBranchName ||
+            workItem.fields['System.CreatedBy'] != env.approvedState ||
+            workItem.fields['System.CreatedBy'] != env.rejectedState ||
+            workItem.fields['System.CreatedBy'] != env.closedState;
+    };
     const updateIfMergingPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
         var _b, _c;
         const headCommitMessage = (_c = (_b = context.payload) === null || _b === void 0 ? void 0 : _b.head_commit) === null || _c === void 0 ? void 0 : _c.message;
