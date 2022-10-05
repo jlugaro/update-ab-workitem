@@ -127,7 +127,7 @@ export function useAzureBoards(env: configurationModel, context: any) {
           switch (env.action) {
             case 'opened':
             case 'edited':
-              if (targetBranch == env.devBranchName) {
+              if (targetBranch == env.devBranchName && canMoveToInReview(workItem)) {
                 console.log(
                   `Development Workflow: Moving work item ${workItemId} to ${env.inReviewState}`
                 )
@@ -139,22 +139,26 @@ export function useAzureBoards(env: configurationModel, context: any) {
               if (context.payload.pull_request.merged == true) {
                 switch (targetBranch) {
                   case env.devBranchName:
-                    console.log(
-                      `Development Workflow: Moving work item ${workItemId} to ${env.mergedState}`
-                    )
-                    await setWorkItemState(workItemId, env.mergedState)
+                    if (canMoveToMerged(workItem)) {  
+                      console.log(
+                        `Development Workflow: Moving work item ${workItemId} to ${env.mergedState}`
+                      )
+                      await setWorkItemState(workItemId, env.mergedState)
+                    }
                     break
                   case env.stagingBranchName:
-                    console.log(
-                      `Moving work item ${workItemId} to ${env.stagingState}`
-                    )
-                    await setWorkItemState(workItemId, env.stagingState)
-
-                    if (workItem.fields['System.CreatedBy']) {
-                      await setWorkItemAssignedTo(
-                        workItemId,
-                        workItem.fields['System.CreatedBy']
+                    if (canMoveToStaging(workItem)) {  
+                      console.log(
+                        `Moving work item ${workItemId} to ${env.stagingState}`
                       )
+                      await setWorkItemState(workItemId, env.stagingState)
+
+                      if (workItem.fields['System.CreatedBy']) {
+                        await setWorkItemAssignedTo(
+                          workItemId,
+                          workItem.fields['System.CreatedBy']
+                        )
+                      }
                     }
                     break
                   case env.mainBranchName:
@@ -189,16 +193,18 @@ export function useAzureBoards(env: configurationModel, context: any) {
               }
               break
             case env.stagingBranchName:
-              console.log(
-                `Moving work item ${workItemId} to ${env.stagingState}`
-              )
-              await setWorkItemState(workItemId, env.stagingState)
-
-              if (workItem.fields['System.CreatedBy']) {
-                await setWorkItemAssignedTo(
-                  workItemId,
-                  workItem.fields['System.CreatedBy']
+              if (canMoveToStaging(workItem)) {  
+                console.log(
+                  `Moving work item ${workItemId} to ${env.stagingState}`
                 )
+                await setWorkItemState(workItemId, env.stagingState)
+
+                if (workItem.fields['System.CreatedBy']) {
+                  await setWorkItemAssignedTo(
+                    workItemId,
+                    workItem.fields['System.CreatedBy']
+                  )
+                }
               }
               break
             case env.mainBranchName:
@@ -229,34 +235,16 @@ export function useAzureBoards(env: configurationModel, context: any) {
             workItem.fields['System.State'] != env.closedState
   }
 
-  const updateIfMergingPullRequest = async (
-    workItemId: string,
-    state: string
-  ): Promise<boolean> => {
-    const headCommitMessage = context.payload?.head_commit?.message
-    if (headCommitMessage) {
-      if (headCommitMessage.includes('Merge pull request')) {
-        console.log(`Moving work item ${workItemId} to ${state}`)
-        await setWorkItemState(workItemId, state)
-        return true
-      }
-    }
-    return false
+  const canMoveToInReview = (workItem: any) => {
+    return workItem.fields['System.State'] == env.inProgressState
   }
 
-  const updateIfCommitingToPullRequest = async (
-    workItemId: string,
-    state: string
-  ): Promise<boolean> => {
-    const headCommitMessage = context.payload?.head_commit?.message
-    if (headCommitMessage) {
-      if (headCommitMessage.includes('pull request')) {
-        console.log(`Moving work item ${workItemId} to ${state}`)
-        await setWorkItemState(workItemId, state)
-        return true
-      }
-    }
-    return false
+  const canMoveToMerged = (workItem: any) => {
+    return workItem.fields['System.State'] == env.inReviewState
+  }
+
+  const canMoveToStaging = (workItem: any) => {
+    return workItem.fields['System.State'] == env.mergedState
   }
 
   const setWorkItemState = async (workItemId: string, state: string) => {

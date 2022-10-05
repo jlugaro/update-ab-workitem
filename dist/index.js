@@ -138,7 +138,7 @@ function useAzureBoards(env, context) {
                     switch (env.action) {
                         case 'opened':
                         case 'edited':
-                            if (targetBranch == env.devBranchName) {
+                            if (targetBranch == env.devBranchName && canMoveToInReview(workItem)) {
                                 console.log(`Development Workflow: Moving work item ${workItemId} to ${env.inReviewState}`);
                                 yield setWorkItemState(workItemId, env.inReviewState);
                             }
@@ -147,14 +147,18 @@ function useAzureBoards(env, context) {
                             if (context.payload.pull_request.merged == true) {
                                 switch (targetBranch) {
                                     case env.devBranchName:
-                                        console.log(`Development Workflow: Moving work item ${workItemId} to ${env.mergedState}`);
-                                        yield setWorkItemState(workItemId, env.mergedState);
+                                        if (canMoveToMerged(workItem)) {
+                                            console.log(`Development Workflow: Moving work item ${workItemId} to ${env.mergedState}`);
+                                            yield setWorkItemState(workItemId, env.mergedState);
+                                        }
                                         break;
                                     case env.stagingBranchName:
-                                        console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
-                                        yield setWorkItemState(workItemId, env.stagingState);
-                                        if (workItem.fields['System.CreatedBy']) {
-                                            yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
+                                        if (canMoveToStaging(workItem)) {
+                                            console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
+                                            yield setWorkItemState(workItemId, env.stagingState);
+                                            if (workItem.fields['System.CreatedBy']) {
+                                                yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
+                                            }
                                         }
                                         break;
                                     case env.mainBranchName:
@@ -187,10 +191,12 @@ function useAzureBoards(env, context) {
                             }
                             break;
                         case env.stagingBranchName:
-                            console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
-                            yield setWorkItemState(workItemId, env.stagingState);
-                            if (workItem.fields['System.CreatedBy']) {
-                                yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
+                            if (canMoveToStaging(workItem)) {
+                                console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
+                                yield setWorkItemState(workItemId, env.stagingState);
+                                if (workItem.fields['System.CreatedBy']) {
+                                    yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
+                                }
                             }
                             break;
                         case env.mainBranchName:
@@ -218,30 +224,15 @@ function useAzureBoards(env, context) {
             workItem.fields['System.State'] != env.rejectedState &&
             workItem.fields['System.State'] != env.closedState;
     };
-    const updateIfMergingPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _b, _c;
-        const headCommitMessage = (_c = (_b = context.payload) === null || _b === void 0 ? void 0 : _b.head_commit) === null || _c === void 0 ? void 0 : _c.message;
-        if (headCommitMessage) {
-            if (headCommitMessage.includes('Merge pull request')) {
-                console.log(`Moving work item ${workItemId} to ${state}`);
-                yield setWorkItemState(workItemId, state);
-                return true;
-            }
-        }
-        return false;
-    });
-    const updateIfCommitingToPullRequest = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
-        var _d, _e;
-        const headCommitMessage = (_e = (_d = context.payload) === null || _d === void 0 ? void 0 : _d.head_commit) === null || _e === void 0 ? void 0 : _e.message;
-        if (headCommitMessage) {
-            if (headCommitMessage.includes('pull request')) {
-                console.log(`Moving work item ${workItemId} to ${state}`);
-                yield setWorkItemState(workItemId, state);
-                return true;
-            }
-        }
-        return false;
-    });
+    const canMoveToInReview = (workItem) => {
+        return workItem.fields['System.State'] == env.inProgressState;
+    };
+    const canMoveToMerged = (workItem) => {
+        return workItem.fields['System.State'] == env.inReviewState;
+    };
+    const canMoveToStaging = (workItem) => {
+        return workItem.fields['System.State'] == env.mergedState;
+    };
     const setWorkItemState = (workItemId, state) => __awaiter(this, void 0, void 0, function* () {
         console.log('Updating work item: ' + workItemId);
         const client = yield getApiClient();
