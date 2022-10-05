@@ -154,8 +154,6 @@ function useAzureBoards(env, context) {
                                     case env.stagingBranchName:
                                         console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
                                         yield setWorkItemState(workItemId, env.stagingState);
-                                        console.log('created by: ');
-                                        console.log(workItem.fields['System.CreatedBy']);
                                         if (workItem.fields['System.CreatedBy']) {
                                             yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
                                         }
@@ -182,7 +180,6 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'push':
-                    console.log(`pushed to ${env.currentBranchName}. action: ${env.githubEventName}`);
                     switch (env.currentBranchName) {
                         case env.devBranchName:
                             if (canMoveToInProgress(workItem)) {
@@ -193,8 +190,6 @@ function useAzureBoards(env, context) {
                         case env.stagingBranchName:
                             console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
                             yield setWorkItemState(workItemId, env.stagingState);
-                            console.log('created by: ');
-                            console.log(workItem.fields['System.CreatedBy']);
                             if (workItem.fields['System.CreatedBy']) {
                                 yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
                             }
@@ -260,6 +255,7 @@ function useAzureBoards(env, context) {
         yield client.updateWorkItem([], patchDocument, workItemId, env.adoProject, false);
     });
     const setWorkItemAssignedTo = (workItemId, assignedTo) => __awaiter(this, void 0, void 0, function* () {
+        console.log(`reassigning workitem id ${workItemId} to ${assignedTo}`);
         const client = yield getApiClient();
         const patchDocument = [
             {
@@ -515,7 +511,7 @@ function run() {
                 }
             }
             else if (isBranchEvent()) {
-                console.log('Branch event');
+                console.log('Push Branch event identified');
                 let workItemIds = [];
                 if ((_b = (_a = github.context) === null || _a === void 0 ? void 0 : _a.payload) === null || _b === void 0 ? void 0 : _b.commits) {
                     workItemIds = getWorkItemIdsFromCommits(github.context.payload.commits);
@@ -537,7 +533,6 @@ function run() {
                 if (workItemIds != null && workItemIds.length) {
                     console.log('Found some work items...');
                     workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
-                        console.log('Setting up work item: ' + workItemId);
                         yield updateWorkItem(workItemId, null);
                     }));
                 }

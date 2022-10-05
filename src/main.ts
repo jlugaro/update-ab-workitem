@@ -79,7 +79,7 @@ async function run(): Promise<void> {
         console.log(err.toString())
       }
     } else if (isBranchEvent()) {
-      console.log('Branch event')
+      console.log('Push Branch event identified')
 
       let workItemIds: string[] = []
 
@@ -111,7 +111,6 @@ async function run(): Promise<void> {
       if (workItemIds != null && workItemIds.length) {
         console.log('Found some work items...')
         workItemIds.forEach(async (workItemId: string) => {
-          console.log('Setting up work item: ' + workItemId)
           await updateWorkItem(workItemId, null)
         })
       }

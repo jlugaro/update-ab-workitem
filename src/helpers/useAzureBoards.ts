@@ -151,9 +151,6 @@ export function useAzureBoards(env: configurationModel, context: any) {
                     )
                     await setWorkItemState(workItemId, env.stagingState)
 
-                    console.log('created by: ')
-                    console.log(workItem.fields['System.CreatedBy'])
-
                     if (workItem.fields['System.CreatedBy']) {
                       await setWorkItemAssignedTo(
                         workItemId,
@@ -183,9 +180,6 @@ export function useAzureBoards(env: configurationModel, context: any) {
           }
           break
         case 'push':
-          console.log(
-            `pushed to ${env.currentBranchName}. action: ${env.githubEventName}`
-          )
           switch (env.currentBranchName) {
             case env.devBranchName:
                if (canMoveToInProgress(workItem)) {
@@ -200,9 +194,6 @@ export function useAzureBoards(env: configurationModel, context: any) {
                 `Moving work item ${workItemId} to ${env.stagingState}`
               )
               await setWorkItemState(workItemId, env.stagingState)
-
-              console.log('created by: ')
-              console.log(workItem.fields['System.CreatedBy'])
 
               if (workItem.fields['System.CreatedBy']) {
                 await setWorkItemAssignedTo(
@@ -293,6 +284,8 @@ export function useAzureBoards(env: configurationModel, context: any) {
     workItemId: string,
     assignedTo: string
   ) => {
+
+    console.log(`reassigning workitem id ${workItemId} to ${assignedTo}`)
     const client = await getApiClient()
 
     const patchDocument = [
