@@ -109,7 +109,6 @@ export function useAzureBoards(env: configurationModel, context: any) {
   }
 
   const updateWorkItem = async (workItemId: string, pullRequest: any) => {
-    console.log('Updating work item: ' + workItemId)
 
     const client = await getApiClient()
 
@@ -261,6 +260,7 @@ export function useAzureBoards(env: configurationModel, context: any) {
   }
 
   const setWorkItemState = async (workItemId: string, state: string) => {
+    console.log('Updating work item: ' + workItemId)
     const client = await getApiClient()
 
     const patchDocument = [
