@@ -221,7 +221,7 @@ function useAzureBoards(env, context) {
         return workItem.fields['System.State'] != env.inProgressState &&
             workItem.fields['System.State'] != env.inReviewState &&
             workItem.fields['System.State'] != env.mergedState &&
-            workItem.fields['System.State'] != env.stagingBranchName &&
+            workItem.fields['System.State'] != env.stagingState &&
             workItem.fields['System.State'] != env.approvedState &&
             workItem.fields['System.State'] != env.rejectedState &&
             workItem.fields['System.State'] != env.closedState;
