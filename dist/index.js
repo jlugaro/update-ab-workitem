@@ -127,7 +127,7 @@ function useAzureBoards(env, context) {
     });
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
         var _a;
-        console.log("updating work item:", workItemId);
+        console.log('***\nentering updateWorkItem method\n***');
         const client = yield getApiClient();
         const workItem = yield client.getWorkItem(workItemId);
         if (workItem) {
