@@ -21,6 +21,8 @@ export class configurationModel {
   approvedState: string
   rejectedState: string
   closedState: string
+  onPushEvent: string
+  onPullRequestEvent: string
 
   constructor(
     action: string | undefined,
@@ -43,7 +45,9 @@ export class configurationModel {
     stagingState: string | undefined,
     approvedState: string | undefined,
     rejectedState: string | undefined,
-    closedState: string | undefined
+    closedState: string | undefined,
+    onPushEvent: string | undefined,
+    onPullRequestEvent: string | undefined
   ) {
     this.action = action ?? ''
     this.githubEventName = githubEventName ?? ''
@@ -66,5 +70,7 @@ export class configurationModel {
     this.approvedState = approvedState ?? ''
     this.rejectedState = rejectedState ?? ''
     this.closedState = closedState ?? ''
+    this.onPushEvent = onPushEvent?? ''
+    this.onPullRequestEvent = onPullRequestEvent ?? ''
   }
 }
