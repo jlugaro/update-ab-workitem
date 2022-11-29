@@ -110,6 +110,7 @@ export function useAzureBoards(env: configurationModel, context: any) {
 
   const updateWorkItem = async (workItemId: string, pullRequest: any) => {
 
+    console.log("updating work item:", workItemId);
     const client = await getApiClient()
 
     const workItem: any = await client.getWorkItem(
