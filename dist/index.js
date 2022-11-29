@@ -127,14 +127,10 @@ function useAzureBoards(env, context) {
     });
     const updateWorkItem = (workItemId, pullRequest) => __awaiter(this, void 0, void 0, function* () {
         var _a;
-        console.log('***\nentering updateWorkItem method\n***');
-        console.log('***\nBefore calling getApiClient\n***');
         const client = yield getApiClient();
-        console.log('***\calling workItem from client\n***');
         const workItem = yield client.getWorkItem(workItemId);
         if (workItem) {
             const targetBranch = pullRequest ? (_a = pullRequest.base) === null || _a === void 0 ? void 0 : _a.ref : null;
-            console.log("Check event");
             switch (env.githubEventName) {
                 case 'pull_request':
                     console.log(`updateWorkItem: pull_request into ${targetBranch}`);
@@ -195,11 +191,11 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'push':
-                    console.log("The value of env.onPushEvent is: ", env.onPushEvent);
-                    // if(!!env.onPushEvent){
-                    //   await moveToStaging(workItemId);
-                    //   return;
-                    // } 
+                    console.log(`Updating work item ${workItemId} 's state to ${env.stagingState}, because OnPullEvent is set.`);
+                    if (!!env.onPushEvent) {
+                        yield moveToStaging(workItemId);
+                        return;
+                    }
                     switch (env.currentBranchName) {
                         case env.devBranchName:
                             if (canMoveToInProgress(workItem)) {

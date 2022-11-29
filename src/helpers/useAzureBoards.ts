@@ -109,19 +109,14 @@ export function useAzureBoards(env: configurationModel, context: any) {
   }
 
   const updateWorkItem = async (workItemId: string, pullRequest: any) => {
-
-    console.log('***\nentering updateWorkItem method\n***')
-    console.log('***\nBefore calling getApiClient\n***')
     const client = await getApiClient()
 
-    console.log('***\calling workItem from client\n***')
     const workItem: any = await client.getWorkItem(
       <number>(<unknown>workItemId)
     )
 
     if (workItem) {
       const targetBranch = pullRequest ? pullRequest.base?.ref : null
-      console.log("Check event");
 
       switch (env.githubEventName) {
         case 'pull_request':
@@ -195,12 +190,12 @@ export function useAzureBoards(env: configurationModel, context: any) {
               break
           }
           break
-        case 'push': 
-        console.log("The value of env.onPushEvent is: ", env.onPushEvent)
-          // if(!!env.onPushEvent){
-          //   await moveToStaging(workItemId);
-          //   return;
-          // } 
+        case 'push':
+          console.log(`Updating work item ${workItemId} 's state to ${env.stagingState}, because OnPullEvent is set.`)
+          if (!!env.onPushEvent) {
+            await moveToStaging(workItemId);
+            return;
+          }
 
           switch (env.currentBranchName) {
             case env.devBranchName:
