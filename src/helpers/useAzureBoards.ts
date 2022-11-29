@@ -113,12 +113,14 @@ export function useAzureBoards(env: configurationModel, context: any) {
     console.log('***\nentering updateWorkItem method\n***')
     const client = await getApiClient()
 
+    console.log('***\calling workItem from client\n***')
     const workItem: any = await client.getWorkItem(
       <number>(<unknown>workItemId)
     )
 
     if (workItem) {
       const targetBranch = pullRequest ? pullRequest.base?.ref : null
+      console.log("Check event");
 
       switch (env.githubEventName) {
         case 'pull_request':

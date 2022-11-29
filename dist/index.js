@@ -129,9 +129,11 @@ function useAzureBoards(env, context) {
         var _a;
         console.log('***\nentering updateWorkItem method\n***');
         const client = yield getApiClient();
+        console.log('***\calling workItem from client\n***');
         const workItem = yield client.getWorkItem(workItemId);
         if (workItem) {
             const targetBranch = pullRequest ? (_a = pullRequest.base) === null || _a === void 0 ? void 0 : _a.ref : null;
+            console.log("Check event");
             switch (env.githubEventName) {
                 case 'pull_request':
                     console.log(`updateWorkItem: pull_request into ${targetBranch}`);
