@@ -123,10 +123,10 @@ export function useAzureBoards(env: configurationModel, context: any) {
         case 'pull_request':
           console.log(`updateWorkItem: pull_request into ${targetBranch}`)
           console.log(`action: ${env.action}`)
-          if (!!env.onPullRequestEvent) {
-            await moveToClosed(workItemId);
-            return;
-          }
+          // if (!!env.onPullRequestEvent) {
+          //   await moveToClosed(workItemId);
+          //   return;
+          // }
 
           switch (env.action) {
             case 'opened':
@@ -177,10 +177,10 @@ export function useAzureBoards(env: configurationModel, context: any) {
           }
           break
         case 'pull_request_review':
-          if (!!env.onPullRequestEvent) {
-            await moveToClosed(workItemId);
-            return;
-          }
+          // if (!!env.onPullRequestEvent) {
+          //   await moveToClosed(workItemId);
+          //   return;
+          // }
 
           switch (env.action) {
             case 'submitted':
@@ -193,10 +193,10 @@ export function useAzureBoards(env: configurationModel, context: any) {
           break
         case 'push': 
         console.log("The value of env.onPushEvent is: ", env.onPushEvent)
-          if(!!env.onPushEvent){
-            await moveToStaging(workItemId);
-            return;
-          } 
+          // if(!!env.onPushEvent){
+          //   await moveToStaging(workItemId);
+          //   return;
+          // } 
 
           switch (env.currentBranchName) {
             case env.devBranchName:
