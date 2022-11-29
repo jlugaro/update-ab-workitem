@@ -122,10 +122,11 @@ export function useAzureBoards(env: configurationModel, context: any) {
         case 'pull_request':
           console.log(`updateWorkItem: pull_request into ${targetBranch}`)
           console.log(`action: ${env.action}`)
-          // if (!!env.onPullRequestEvent) {
-          //   await moveToClosed(workItemId);
-          //   return;
-          // }
+          if (!!env.onPullRequestEvent) {
+            console.log(`Updating work item AB#${workItemId} 's state to ${env.closedState}.`)
+            await moveToClosed(workItemId);
+            return;
+          }
 
           switch (env.action) {
             case 'opened':
@@ -176,10 +177,11 @@ export function useAzureBoards(env: configurationModel, context: any) {
           }
           break
         case 'pull_request_review':
-          // if (!!env.onPullRequestEvent) {
-          //   await moveToClosed(workItemId);
-          //   return;
-          // }
+          if (!!env.onPullRequestEvent) {
+            console.log(`Updating work item AB#${workItemId} 's state to ${env.closedState}.`)
+            await moveToClosed(workItemId);
+            return;
+          }
 
           switch (env.action) {
             case 'submitted':
@@ -191,8 +193,8 @@ export function useAzureBoards(env: configurationModel, context: any) {
           }
           break
         case 'push':
-          console.log(`Updating work item ${workItemId} 's state to ${env.stagingState}, because OnPullEvent is set.`)
           if (!!env.onPushEvent) {
+            console.log(`Updating work item AB#${workItemId} 's state to ${env.stagingState}.`)
             await moveToStaging(workItemId);
             return;
           }

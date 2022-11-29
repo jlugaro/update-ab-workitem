@@ -135,10 +135,11 @@ function useAzureBoards(env, context) {
                 case 'pull_request':
                     console.log(`updateWorkItem: pull_request into ${targetBranch}`);
                     console.log(`action: ${env.action}`);
-                    // if (!!env.onPullRequestEvent) {
-                    //   await moveToClosed(workItemId);
-                    //   return;
-                    // }
+                    if (!!env.onPullRequestEvent) {
+                        console.log(`Updating work item AB#${workItemId} 's state to ${env.closedState}.`);
+                        yield moveToClosed(workItemId);
+                        return;
+                    }
                     switch (env.action) {
                         case 'opened':
                         case 'edited':
@@ -177,10 +178,11 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'pull_request_review':
-                    // if (!!env.onPullRequestEvent) {
-                    //   await moveToClosed(workItemId);
-                    //   return;
-                    // }
+                    if (!!env.onPullRequestEvent) {
+                        console.log(`Updating work item AB#${workItemId} 's state to ${env.closedState}.`);
+                        yield moveToClosed(workItemId);
+                        return;
+                    }
                     switch (env.action) {
                         case 'submitted':
                         case 'edited':
@@ -191,8 +193,8 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'push':
-                    console.log(`Updating work item ${workItemId} 's state to ${env.stagingState}, because OnPullEvent is set.`);
                     if (!!env.onPushEvent) {
+                        console.log(`Updating work item AB#${workItemId} 's state to ${env.stagingState}.`);
                         yield moveToStaging(workItemId);
                         return;
                     }
