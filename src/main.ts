@@ -59,6 +59,7 @@ async function run(): Promise<void> {
 
       console.log(`Pull Request title: ${pullRequest.title}`)
       console.log(`Pull Request body: ${pullRequest.body}`)
+      console.log('body:', pullRequest)
 
       try {
         await updateWorkItemsFromPullRequest(pullRequest)

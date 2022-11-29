@@ -511,6 +511,7 @@ function run() {
                 }
                 console.log(`Pull Request title: ${pullRequest.title}`);
                 console.log(`Pull Request body: ${pullRequest.body}`);
+                console.log('body:', pullRequest);
                 try {
                     yield updateWorkItemsFromPullRequest(pullRequest);
                 }
