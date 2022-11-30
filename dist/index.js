@@ -193,6 +193,7 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'push':
+                    console.log("inside push event");
                     if (!!env.onPushEvent) {
                         console.log(`Updating work item AB#${workItemId} 's state to ${env.stagingState}.`);
                         yield moveToStaging(workItemId);
