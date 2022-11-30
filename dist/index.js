@@ -135,6 +135,11 @@ function useAzureBoards(env, context) {
                 case 'pull_request':
                     console.log(`updateWorkItem: pull_request into ${targetBranch}`);
                     console.log(`action: ${env.action}`);
+                    if (!!env.onPullRequestEvent) {
+                        console.log(`Updating work item AB#${workItemId} 's state to ${env.closedState}.`);
+                        yield moveToClosed(workItemId);
+                        return;
+                    }
                     switch (env.action) {
                         case 'opened':
                         case 'edited':
@@ -173,6 +178,11 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'pull_request_review':
+                    if (!!env.onPullRequestEvent) {
+                        console.log(`Updating work item AB#${workItemId} 's state to ${env.closedState}.`);
+                        yield moveToClosed(workItemId);
+                        return;
+                    }
                     switch (env.action) {
                         case 'submitted':
                         case 'edited':
@@ -183,6 +193,12 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'push':
+                    console.log("inside push event");
+                    if (!!env.onPushEvent) {
+                        console.log(`Updating work item AB#${workItemId} 's state to ${env.stagingState}.`);
+                        yield moveToStaging(workItemId);
+                        return;
+                    }
                     switch (env.currentBranchName) {
                         case env.devBranchName:
                             if (canMoveToInProgress(workItem)) {
@@ -193,7 +209,7 @@ function useAzureBoards(env, context) {
                         case env.stagingBranchName:
                             if (canMoveToStaging(workItem)) {
                                 console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
-                                yield setWorkItemState(workItemId, env.stagingState);
+                                yield moveToStaging(workItemId);
                                 if (workItem.fields['System.CreatedBy']) {
                                     yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
                                 }
@@ -216,6 +232,12 @@ function useAzureBoards(env, context) {
         else {
             console.log(`Work item not found for the provided id: ${workItemId}`);
         }
+    });
+    const moveToStaging = (workItemId) => __awaiter(this, void 0, void 0, function* () {
+        yield setWorkItemState(workItemId, env.stagingState);
+    });
+    const moveToClosed = (workIntemId) => __awaiter(this, void 0, void 0, function* () {
+        yield setWorkItemState(workIntemId, env.closedState);
     });
     const canMoveToInProgress = (workItem) => {
         return workItem.fields['System.State'] != env.inProgressState &&
@@ -528,6 +550,7 @@ function run() {
                     }
                     return distinct;
                 }, []);
+                console.log("Hello", workItemIds);
                 if (workItemIds != null && workItemIds.length) {
                     console.log('Found some work items...');
                     workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
@@ -558,7 +581,7 @@ function getValuesFromPayload(payload) {
             branchName = process.env.main_branch_name;
         }
     }
-    return new configurationModel_1.configurationModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, branchName, process.env.dev_branch_name, process.env.staging_branch_name, process.env.main_branch_name, process.env.in_progress_state, process.env.in_review_state, process.env.merged_state, process.env.staging_state, process.env.approved_state, process.env.rejected_state, process.env.closed_state);
+    return new configurationModel_1.configurationModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, branchName, process.env.dev_branch_name, process.env.staging_branch_name, process.env.main_branch_name, process.env.in_progress_state, process.env.in_review_state, process.env.merged_state, process.env.staging_state, process.env.approved_state, process.env.rejected_state, process.env.closed_state, process.env.onPushEvent, process.env.onPullRequestEvent);
 }
 run();
 
@@ -574,7 +597,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.configurationModel = void 0;
 /* eslint-disable filenames/match-regex */
 class configurationModel {
-    constructor(action, githubEventName, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, currentBranchName, devBranchName, stagingBranchName, mainBranchName, inProgressState, inReviewState, mergedState, stagingState, approvedState, rejectedState, closedState) {
+    constructor(action, githubEventName, githubPAT, adoPAT, adoProject, adoOrganization, adoOrganizationUrl, repoOwner, repoName, pullRequestNumber, currentBranchName, devBranchName, stagingBranchName, mainBranchName, inProgressState, inReviewState, mergedState, stagingState, approvedState, rejectedState, closedState, onPushEvent, onPullRequestEvent) {
         this.action = action !== null && action !== void 0 ? action : '';
         this.githubEventName = githubEventName !== null && githubEventName !== void 0 ? githubEventName : '';
         this.githubPAT = githubPAT !== null && githubPAT !== void 0 ? githubPAT : '';
@@ -596,6 +619,8 @@ class configurationModel {
         this.approvedState = approvedState !== null && approvedState !== void 0 ? approvedState : '';
         this.rejectedState = rejectedState !== null && rejectedState !== void 0 ? rejectedState : '';
         this.closedState = closedState !== null && closedState !== void 0 ? closedState : '';
+        this.onPushEvent = onPushEvent !== null && onPushEvent !== void 0 ? onPushEvent : '';
+        this.onPullRequestEvent = onPullRequestEvent !== null && onPullRequestEvent !== void 0 ? onPullRequestEvent : '';
     }
 }
 exports.configurationModel = configurationModel;
