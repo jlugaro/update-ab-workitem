@@ -69,4 +69,6 @@ jobs:
           closedstate: 'Closed'
           inprogressstate: 'Active'
           propenstate: 'Resolved'
+          onPushEvent: 'Staging' # optional
+          onPullRequestEvent: 'Closed' # optional
 ```
