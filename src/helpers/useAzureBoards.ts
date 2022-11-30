@@ -193,7 +193,6 @@ export function useAzureBoards(env: configurationModel, context: any) {
           }
           break
         case 'push':
-          console.log("inside push event")
           if (!!env.onPushEvent) {
             console.log(`Updating work item AB#${workItemId} 's state to ${env.stagingState}.`)
             await moveToStaging(workItemId);
