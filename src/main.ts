@@ -156,8 +156,8 @@ function getValuesFromPayload(payload: any) {
     process.env.approved_state,
     process.env.rejected_state,
     process.env.closed_state,
-    process.env.on_push_event,
-    process.env.on_pull_request_event
+    process.env.on_push_event, # Optional. This will cause to force a workitem state on Push Events.
+    process.env.on_pull_request_event # Optional. This will cause to force a workitem state on Pull Request Events.
   )
 }
 
