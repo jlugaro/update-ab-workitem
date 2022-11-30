@@ -551,7 +551,7 @@ function run() {
                     }
                     return distinct;
                 }, []);
-                console.log(workItemIds);
+                console.log("Hello", workItemIds);
                 if (workItemIds != null && workItemIds.length) {
                     console.log('Found some work items...');
                     workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {

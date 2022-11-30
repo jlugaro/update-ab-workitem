@@ -108,7 +108,7 @@ async function run(): Promise<void> {
         return distinct
       }, [])
 
-      console.log(workItemIds);
+      console.log("Hello", workItemIds);
 
       if (workItemIds != null && workItemIds.length) {
         console.log('Found some work items...')
