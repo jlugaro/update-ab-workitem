@@ -123,8 +123,8 @@ export function useAzureBoards(env: configurationModel, context: any) {
           console.log(`updateWorkItem: pull_request into ${targetBranch}`)
           console.log(`action: ${env.action}`)
           if (!!env.onPullRequestEvent) {
-            console.log(`Updating work item AB#${workItemId} 's state to ${env.closedState}.`)
-            await moveToClosed(workItemId);
+            console.log(`Updating work item AB#${workItemId} 's state to ${env.onPullRequestEvent}.`)
+            await setWorkItemState(workItemId, env.onPullRequestEvent)
             return;
           }
 
@@ -178,8 +178,8 @@ export function useAzureBoards(env: configurationModel, context: any) {
           break
         case 'pull_request_review':
           if (!!env.onPullRequestEvent) {
-            console.log(`Updating work item AB#${workItemId} 's state to ${env.closedState}.`)
-            await moveToClosed(workItemId);
+            console.log(`Updating work item AB#${workItemId} 's state to ${env.onPullRequestEvent}.`)
+            await setWorkItemState(workItemId, env.onPullRequestEvent)
             return;
           }
 
@@ -194,8 +194,8 @@ export function useAzureBoards(env: configurationModel, context: any) {
           break
         case 'push':
           if (!!env.onPushEvent) {
-            console.log(`Updating work item AB#${workItemId} 's state to ${env.stagingState}.`)
-            await moveToStaging(workItemId);
+            console.log(`Updating work item AB#${workItemId} 's state to ${env.onPushEvent}.`)
+            await setWorkItemState(workItemId, env.onPushEvent)
             return;
           }
 
