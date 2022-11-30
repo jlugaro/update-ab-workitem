@@ -115,6 +115,8 @@ export function useAzureBoards(env: configurationModel, context: any) {
       <number>(<unknown>workItemId)
     )
 
+    console.log("workItem:", workItem.length);
+
     if (workItem) {
       const targetBranch = pullRequest ? pullRequest.base?.ref : null
 
