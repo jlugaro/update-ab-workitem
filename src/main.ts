@@ -156,8 +156,8 @@ function getValuesFromPayload(payload: any) {
     process.env.approved_state,
     process.env.rejected_state,
     process.env.closed_state,
-    process.env.onPushEvent,
-    process.env.onPullRequestEvent
+    process.env.on_push_event,
+    process.env.on_pull_request_event
   )
 }
 
