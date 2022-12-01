@@ -136,8 +136,8 @@ function useAzureBoards(env, context) {
                     console.log(`updateWorkItem: pull_request into ${targetBranch}`);
                     console.log(`action: ${env.action}`);
                     if (!!env.onPullRequestEvent) {
-                        console.log(`Updating work item AB#${workItemId} 's state to ${env.closedState}.`);
-                        yield moveToClosed(workItemId);
+                        console.log(`Updating work item AB#${workItemId} 's state to ${env.onPullRequestEvent}.`);
+                        yield setWorkItemState(workItemId, env.onPullRequestEvent);
                         return;
                     }
                     switch (env.action) {
@@ -179,8 +179,8 @@ function useAzureBoards(env, context) {
                     break;
                 case 'pull_request_review':
                     if (!!env.onPullRequestEvent) {
-                        console.log(`Updating work item AB#${workItemId} 's state to ${env.closedState}.`);
-                        yield moveToClosed(workItemId);
+                        console.log(`Updating work item AB#${workItemId} 's state to ${env.onPullRequestEvent}.`);
+                        yield setWorkItemState(workItemId, env.onPullRequestEvent);
                         return;
                     }
                     switch (env.action) {
@@ -193,10 +193,9 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'push':
-                    console.log("inside push event");
                     if (!!env.onPushEvent) {
-                        console.log(`Updating work item AB#${workItemId} 's state to ${env.stagingState}.`);
-                        yield moveToStaging(workItemId);
+                        console.log(`Updating work item AB#${workItemId} 's state to ${env.onPushEvent}.`);
+                        yield setWorkItemState(workItemId, env.onPushEvent);
                         return;
                     }
                     switch (env.currentBranchName) {
@@ -550,7 +549,6 @@ function run() {
                     }
                     return distinct;
                 }, []);
-                console.log("Hello", workItemIds);
                 if (workItemIds != null && workItemIds.length) {
                     console.log('Found some work items...');
                     workItemIds.forEach((workItemId) => __awaiter(this, void 0, void 0, function* () {
@@ -581,7 +579,7 @@ function getValuesFromPayload(payload) {
             branchName = process.env.main_branch_name;
         }
     }
-    return new configurationModel_1.configurationModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, branchName, process.env.dev_branch_name, process.env.staging_branch_name, process.env.main_branch_name, process.env.in_progress_state, process.env.in_review_state, process.env.merged_state, process.env.staging_state, process.env.approved_state, process.env.rejected_state, process.env.closed_state, process.env.onPushEvent, process.env.onPullRequestEvent);
+    return new configurationModel_1.configurationModel(payload.action, process.env.GITHUB_EVENT_NAME, process.env.gh_token, process.env.ado_token, process.env.ado_project, process.env.ado_organization, `https://dev.azure.com/${process.env.ado_organization}`, process.env.gh_repo_owner, process.env.gh_repo, process.env.pull_number, branchName, process.env.dev_branch_name, process.env.staging_branch_name, process.env.main_branch_name, process.env.in_progress_state, process.env.in_review_state, process.env.merged_state, process.env.staging_state, process.env.approved_state, process.env.rejected_state, process.env.closed_state, process.env.on_push_event, process.env.on_pull_request_event);
 }
 run();
 
