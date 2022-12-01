@@ -135,7 +135,7 @@ function useAzureBoards(env, context) {
                 case 'pull_request':
                     console.log(`updateWorkItem: pull_request into ${targetBranch}`);
                     console.log(`action: ${env.action}`);
-                    if (!!env.onPullRequestEvent) {
+                    if (canMoveOnPullRequest(workItem)) {
                         console.log(`Updating work item AB#${workItemId} 's state to ${env.onPullRequestEvent}.`);
                         yield setWorkItemState(workItemId, env.onPullRequestEvent);
                         return;
@@ -178,7 +178,7 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'pull_request_review':
-                    if (!!env.onPullRequestEvent) {
+                    if (canMoveOnPullRequest(workItem)) {
                         console.log(`Updating work item AB#${workItemId} 's state to ${env.onPullRequestEvent}.`);
                         yield setWorkItemState(workItemId, env.onPullRequestEvent);
                         return;
@@ -193,7 +193,7 @@ function useAzureBoards(env, context) {
                     }
                     break;
                 case 'push':
-                    if (!!env.onPushEvent) {
+                    if (canMoveOnPush(workItem)) {
                         console.log(`Updating work item AB#${workItemId} 's state to ${env.onPushEvent}.`);
                         yield setWorkItemState(workItemId, env.onPushEvent);
                         return;
@@ -208,7 +208,7 @@ function useAzureBoards(env, context) {
                         case env.stagingBranchName:
                             if (canMoveToStaging(workItem)) {
                                 console.log(`Moving work item ${workItemId} to ${env.stagingState}`);
-                                yield moveToStaging(workItemId);
+                                yield setWorkItemState(workItemId, env.stagingState);
                                 if (workItem.fields['System.CreatedBy']) {
                                     yield setWorkItemAssignedTo(workItemId, workItem.fields['System.CreatedBy']);
                                 }
@@ -232,12 +232,14 @@ function useAzureBoards(env, context) {
             console.log(`Work item not found for the provided id: ${workItemId}`);
         }
     });
-    const moveToStaging = (workItemId) => __awaiter(this, void 0, void 0, function* () {
-        yield setWorkItemState(workItemId, env.stagingState);
-    });
-    const moveToClosed = (workIntemId) => __awaiter(this, void 0, void 0, function* () {
-        yield setWorkItemState(workIntemId, env.closedState);
-    });
+    const canMoveOnPush = (workItem) => {
+        const currentState = workItem.fields['System.State'];
+        return currentState != env.onPullRequestEvent && !!env.onPushEvent;
+    };
+    const canMoveOnPullRequest = (workItem) => {
+        const currentState = workItem.fields['System.State'];
+        return currentState != env.onPullRequestEvent && !!env.onPullRequestEvent;
+    };
     const canMoveToInProgress = (workItem) => {
         return workItem.fields['System.State'] != env.inProgressState &&
             workItem.fields['System.State'] != env.inReviewState &&

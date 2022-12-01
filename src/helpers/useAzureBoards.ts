@@ -122,7 +122,8 @@ export function useAzureBoards(env: configurationModel, context: any) {
         case 'pull_request':
           console.log(`updateWorkItem: pull_request into ${targetBranch}`)
           console.log(`action: ${env.action}`)
-          if (!!env.onPullRequestEvent) {
+          
+          if (canMoveOnPullRequest(workItem)) {
             console.log(`Updating work item AB#${workItemId} 's state to ${env.onPullRequestEvent}.`)
             await setWorkItemState(workItemId, env.onPullRequestEvent)
             return;
@@ -177,7 +178,7 @@ export function useAzureBoards(env: configurationModel, context: any) {
           }
           break
         case 'pull_request_review':
-          if (!!env.onPullRequestEvent) {
+          if (canMoveOnPullRequest(workItem)) {
             console.log(`Updating work item AB#${workItemId} 's state to ${env.onPullRequestEvent}.`)
             await setWorkItemState(workItemId, env.onPullRequestEvent)
             return;
@@ -193,7 +194,7 @@ export function useAzureBoards(env: configurationModel, context: any) {
           }
           break
         case 'push':
-          if (!!env.onPushEvent) {
+          if (canMoveOnPush(workItem)) {
             console.log(`Updating work item AB#${workItemId} 's state to ${env.onPushEvent}.`)
             await setWorkItemState(workItemId, env.onPushEvent)
             return;
@@ -213,7 +214,7 @@ export function useAzureBoards(env: configurationModel, context: any) {
                 console.log(
                   `Moving work item ${workItemId} to ${env.stagingState}`
                 )
-                await moveToStaging(workItemId);
+                await setWorkItemState(workItemId, env.stagingState)
 
                 if (workItem.fields['System.CreatedBy']) {
                   await setWorkItemAssignedTo(
@@ -243,12 +244,14 @@ export function useAzureBoards(env: configurationModel, context: any) {
     }
   }
 
-  const moveToStaging = async (workItemId: any) => {
-    await setWorkItemState(workItemId, env.stagingState)
+  const canMoveOnPush = (workItem: any): boolean => {
+    const currentState = workItem.fields['System.State'];
+    return currentState != env.onPullRequestEvent && !!env.onPushEvent;
   }
 
-  const moveToClosed = async (workIntemId: any) => {
-    await setWorkItemState(workIntemId, env.closedState)
+  const canMoveOnPullRequest = (workItem:any): boolean => {
+    const currentState = workItem.fields['System.State'];
+    return currentState != env.onPullRequestEvent && !!env.onPullRequestEvent;
   }
 
   const canMoveToInProgress = (workItem: any) => {
