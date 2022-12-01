@@ -37,7 +37,6 @@ async function run(): Promise<void> {
 
     if (workItemIds != null && workItemIds.length > 0) {
       console.log('Found work items: ' + workItemIds.toString())
-
       workItemIds.forEach(async (workItemId: string) => {
         await updateWorkItem(workItemId, pullRequest)
       })
@@ -156,7 +155,9 @@ function getValuesFromPayload(payload: any) {
     process.env.staging_state,
     process.env.approved_state,
     process.env.rejected_state,
-    process.env.closed_state
+    process.env.closed_state,
+    process.env.on_push_event,
+    process.env.on_pull_request_event
   )
 }
 

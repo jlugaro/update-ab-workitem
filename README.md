@@ -69,4 +69,6 @@ jobs:
           closedstate: 'Closed'
           inprogressstate: 'Active'
           propenstate: 'Resolved'
+          on_push_event: 'Staging' # Optional. This will cause to force a workitem state on Push Events
+          on_pull_request_event: 'Closed' # Optional. This will cause to force a workitem state on Pull Request Events
 ```

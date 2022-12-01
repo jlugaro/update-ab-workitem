@@ -1,5 +1,5 @@
 import * as azureDevOpsHandler from 'azure-devops-node-api'
-import {configurationModel} from '../models/configurationModel'
+import { configurationModel } from '../models/configurationModel'
 
 export function useAzureBoards(env: configurationModel, context: any) {
   const getWorkItemsFromText = (text: string) => {
@@ -109,7 +109,6 @@ export function useAzureBoards(env: configurationModel, context: any) {
   }
 
   const updateWorkItem = async (workItemId: string, pullRequest: any) => {
-
     const client = await getApiClient()
 
     const workItem: any = await client.getWorkItem(
@@ -123,6 +122,12 @@ export function useAzureBoards(env: configurationModel, context: any) {
         case 'pull_request':
           console.log(`updateWorkItem: pull_request into ${targetBranch}`)
           console.log(`action: ${env.action}`)
+          
+          if (canMoveOnPullRequest(workItem)) {
+            console.log(`Updating work item AB#${workItemId} 's state to ${env.onPullRequestEvent}.`)
+            await setWorkItemState(workItemId, env.onPullRequestEvent)
+            return;
+          }
 
           switch (env.action) {
             case 'opened':
@@ -139,7 +144,7 @@ export function useAzureBoards(env: configurationModel, context: any) {
               if (context.payload.pull_request.merged == true) {
                 switch (targetBranch) {
                   case env.devBranchName:
-                    if (canMoveToMerged(workItem)) {  
+                    if (canMoveToMerged(workItem)) {
                       console.log(
                         `Development Workflow: Moving work item ${workItemId} to ${env.mergedState}`
                       )
@@ -147,7 +152,7 @@ export function useAzureBoards(env: configurationModel, context: any) {
                     }
                     break
                   case env.stagingBranchName:
-                    if (canMoveToStaging(workItem)) {  
+                    if (canMoveToStaging(workItem)) {
                       console.log(
                         `Moving work item ${workItemId} to ${env.stagingState}`
                       )
@@ -173,6 +178,12 @@ export function useAzureBoards(env: configurationModel, context: any) {
           }
           break
         case 'pull_request_review':
+          if (canMoveOnPullRequest(workItem)) {
+            console.log(`Updating work item AB#${workItemId} 's state to ${env.onPullRequestEvent}.`)
+            await setWorkItemState(workItemId, env.onPullRequestEvent)
+            return;
+          }
+
           switch (env.action) {
             case 'submitted':
             case 'edited':
@@ -183,9 +194,15 @@ export function useAzureBoards(env: configurationModel, context: any) {
           }
           break
         case 'push':
+          if (canMoveOnPush(workItem)) {
+            console.log(`Updating work item AB#${workItemId} 's state to ${env.onPushEvent}.`)
+            await setWorkItemState(workItemId, env.onPushEvent)
+            return;
+          }
+
           switch (env.currentBranchName) {
             case env.devBranchName:
-               if (canMoveToInProgress(workItem)) {
+              if (canMoveToInProgress(workItem)) {
                 console.log(
                   `Moving work item ${workItemId} to ${env.inProgressState}`
                 )
@@ -193,7 +210,7 @@ export function useAzureBoards(env: configurationModel, context: any) {
               }
               break
             case env.stagingBranchName:
-              if (canMoveToStaging(workItem)) {  
+              if (canMoveToStaging(workItem)) {
                 console.log(
                   `Moving work item ${workItemId} to ${env.stagingState}`
                 )
@@ -227,14 +244,24 @@ export function useAzureBoards(env: configurationModel, context: any) {
     }
   }
 
+  const canMoveOnPush = (workItem: any): boolean => {
+    const currentState = workItem.fields['System.State'];
+    return currentState != env.onPullRequestEvent && !!env.onPushEvent;
+  }
+
+  const canMoveOnPullRequest = (workItem:any): boolean => {
+    const currentState = workItem.fields['System.State'];
+    return currentState != env.onPullRequestEvent && !!env.onPullRequestEvent;
+  }
+
   const canMoveToInProgress = (workItem: any) => {
     return workItem.fields['System.State'] != env.inProgressState &&
-            workItem.fields['System.State'] != env.inReviewState &&
-            workItem.fields['System.State'] != env.mergedState &&
-            workItem.fields['System.State'] != env.stagingState &&
-            workItem.fields['System.State'] != env.approvedState &&
-            workItem.fields['System.State'] != env.rejectedState &&
-            workItem.fields['System.State'] != env.closedState
+      workItem.fields['System.State'] != env.inReviewState &&
+      workItem.fields['System.State'] != env.mergedState &&
+      workItem.fields['System.State'] != env.stagingState &&
+      workItem.fields['System.State'] != env.approvedState &&
+      workItem.fields['System.State'] != env.rejectedState &&
+      workItem.fields['System.State'] != env.closedState
   }
 
   const canMoveToInReview = (workItem: any) => {
